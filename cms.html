@@ -13,7 +13,11 @@
       matching folder in your repo, then commit. Static hosting can't write
       files for you — this just keeps names + paths consistent.
     - Live preview mirrors the site's right-hand viewer.
-    - "Export projects.json" downloads the file. Drop it in /data and commit.
+    - "Save projects.json" uses the File System Access API: first click opens a
+      file picker (navigate to data/projects.json and confirm), then every
+      subsequent save writes directly to that file. The handle is remembered
+      in IndexedDB so it persists across page reloads. Falls back to a regular
+      download in browsers that don't support the API.
     - Autosaves your working draft to the browser so a refresh won't lose it.
   ============================================================
 -->
@@ -154,6 +158,30 @@
   .files-note code{ color:var(--safe); }
   .empty{ color:var(--ink-faint); font-size:.65rem; letter-spacing:.06em; padding:1rem 0; }
 
+  /* pill / tag input */
+  .pill-input{
+    display:flex; flex-wrap:wrap; gap:.3rem; align-items:center;
+    background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius);
+    padding:.3rem .45rem; min-height:34px; cursor:text;
+  }
+  .pill-input:focus-within{ border-color:var(--safe-dim); }
+  .pill{
+    display:flex; align-items:center; gap:.3rem;
+    background:var(--safe-dim); color:var(--safe);
+    border-radius:2px; padding:.15rem .45rem;
+    font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap;
+  }
+  .pill-rm{
+    background:none; border:none; padding:0; color:inherit; opacity:.7;
+    cursor:pointer; font-size:.8rem; line-height:1; font-family:inherit;
+  }
+  .pill-rm:hover{ opacity:1; }
+  .pill-input input{
+    background:none; border:none; color:var(--ink); font:inherit;
+    flex:1; min-width:80px; padding:.1rem .2rem;
+  }
+  .pill-input input:focus{ outline:none; }
+
   @media (max-width:1100px){ .wrap{ grid-template-columns:1fr; } .pv{ position:static; } }
 </style>
 </head>
@@ -166,7 +194,7 @@
   <label class="btn" for="loadFile">Load JSON</label>
   <input type="file" id="loadFile" accept="application/json,.json" hidden>
   <button id="copyBtn">Copy JSON</button>
-  <button id="exportBtn" class="primary">Export projects.json</button>
+  <button id="exportBtn" class="primary">Save projects.json</button>
   <button id="resetBtn" class="danger">Reset</button>
 </header>
 
@@ -197,9 +225,53 @@ let data = [];
 let sel = 0;
 let pvCat = "stills", pvIdx = 0;
 const blobUrls = {};                 // path -> objectURL for local preview
+let fileHandle = null;               // FileSystemFileHandle for direct save
 
 const $ = s => document.querySelector(s);
 const statusEl = $("#status");
+
+/* ---------- File System Access API (direct save to data/projects.json) ---------- */
+function openIDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open("fir_cms",1);
+    req.onupgradeneeded=()=>req.result.createObjectStore("handles");
+    req.onsuccess=()=>res(req.result);
+    req.onerror=()=>rej(req.error);
+  });
+}
+async function saveHandleToIDB(h){
+  try{ const db=await openIDB(); db.transaction("handles","readwrite").objectStore("handles").put(h,"projects"); }catch(e){}
+}
+async function loadHandleFromIDB(){
+  try{
+    const db=await openIDB();
+    return await new Promise((res,rej)=>{
+      const req=db.transaction("handles","readonly").objectStore("handles").get("projects");
+      req.onsuccess=()=>res(req.result||null); req.onerror=()=>rej(req.error);
+    });
+  }catch(e){ return null; }
+}
+async function getWriteHandle(){
+  if(fileHandle){
+    const perm=await fileHandle.queryPermission({mode:"readwrite"});
+    if(perm==="granted") return fileHandle;
+    if(await fileHandle.requestPermission({mode:"readwrite"})==="granted") return fileHandle;
+    fileHandle=null;
+  }
+  fileHandle=await window.showSaveFilePicker({
+    suggestedName:"projects.json",
+    types:[{description:"JSON",accept:{"application/json":[".json"]}}],
+  });
+  await saveHandleToIDB(fileHandle);
+  return fileHandle;
+}
+function updateExportBtn(){
+  $("#exportBtn").textContent = fileHandle ? "Save → "+fileHandle.name : "Save projects.json";
+}
+async function restoreHandle(){
+  fileHandle=await loadHandleFromIDB();
+  updateExportBtn();
+}
 
 /* ---------- load ---------- */
 async function init(){
@@ -212,6 +284,7 @@ async function init(){
   }
   if(!Array.isArray(data)) data = [];
   renderAll();
+  restoreHandle();
 }
 
 /* ---------- autosave ---------- */
@@ -278,7 +351,12 @@ function renderEditor(){
       <div class="field" style="grid-column:span 2"><label>Title</label><input type="text" id="f_title" value="${esc(p.title)}"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>Role / disciplines</label><input type="text" id="f_role" value="${esc(p.role)}"></div>
+      <div class="field"><label>Role / disciplines</label>
+        <div class="pill-input" id="f_role_wrap">
+          ${(p.role||"").split("·").map(s=>s.trim()).filter(Boolean).map(v=>`<span class="pill" data-v="${esc(v)}">${esc(v)}<button class="pill-rm" tabindex="-1">×</button></span>`).join("")}
+          <input type="text" id="f_role_inp" placeholder="type & enter…" autocomplete="off">
+        </div>
+      </div>
       <div class="field"><label>Year</label><input type="text" id="f_year" value="${esc(p.year)}"></div>
     </div>
     <div style="display:flex;gap:.5rem">
@@ -289,10 +367,35 @@ function renderEditor(){
     <div class="medias" id="medias"></div>
     <button id="addMedia" style="margin-top:.7rem;width:100%">+ Add media</button>
   `;
-  bind("f_code","code"); bind("f_title","title"); bind("f_role","role"); bind("f_year","year");
+  bind("f_code","code"); bind("f_title","title"); bind("f_year","year");
   $("#delProj").onclick = ()=>{ if(confirm("Delete this project?")){ data.splice(sel,1); sel=Math.max(0,sel-1); renderAll(); } };
   $("#addMedia").onclick = ()=>{ (p.media=p.media||[]).push(newMedia("image")); renderAll(); };
   renderMedias(p);
+
+  // pill input for role
+  const roleWrap=$("#f_role_wrap"), roleInp=$("#f_role_inp");
+  function rolePills(){ return (p.role||"").split("·").map(s=>s.trim()).filter(Boolean); }
+  function commitPill(){
+    const v=roleInp.value.replace(/,/g,"").trim();
+    if(v && !rolePills().includes(v)) p.role=[...rolePills(),v].join(" · ");
+    renderAll();
+    setTimeout(()=>{ const i=$("#f_role_inp"); if(i) i.focus(); },0);
+  }
+  roleInp.addEventListener("keydown",e=>{
+    if(e.key==="Enter"||e.key===","){ e.preventDefault(); commitPill(); }
+    else if(e.key==="Backspace"&&!roleInp.value){
+      const pills=rolePills(); if(!pills.length) return;
+      p.role=pills.slice(0,-1).join(" · ");
+      renderAll(); setTimeout(()=>{ const i=$("#f_role_inp"); if(i) i.focus(); },0);
+    }
+  });
+  roleWrap.addEventListener("click",e=>{
+    if(e.target.classList.contains("pill-rm")){
+      const v=e.target.closest(".pill").dataset.v;
+      p.role=rolePills().filter(x=>x!==v).join(" · ");
+      renderAll();
+    } else { roleInp.focus(); }
+  });
 
   function bind(id,key){ const i=$("#"+id); i.oninput=()=>{ p[key]=i.value; renderProjects(); renderPreview(); save(); }; }
 }
@@ -499,9 +602,23 @@ $("#addProj").onclick = ()=>{
   data.push({ code:String(n).padStart(3,"0"), title:"New Project", role:"", year:String(new Date().getFullYear()), media:[] });
   sel=data.length-1; pvCat="stills"; pvIdx=0; renderAll();
 };
-$("#exportBtn").onclick = ()=>{
-  const blob=new Blob([clean()],{type:"application/json"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="projects.json"; a.click();
+$("#exportBtn").onclick = async ()=>{
+  if(!window.showSaveFilePicker){
+    // fallback for browsers without File System Access API
+    const blob=new Blob([clean()],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="projects.json"; a.click();
+    return;
+  }
+  try{
+    const h=await getWriteHandle();
+    const w=await h.createWritable();
+    await w.write(clean());
+    await w.close();
+    updateExportBtn();
+    statusEl.textContent="saved · "+new Date().toLocaleTimeString();
+  }catch(e){
+    if(e.name!=="AbortError") statusEl.textContent="save failed — "+e.message;
+  }
 };
 $("#copyBtn").onclick = async ()=>{
   try{ await navigator.clipboard.writeText(clean()); statusEl.textContent="JSON copied to clipboard"; }

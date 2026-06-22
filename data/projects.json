@@ -2,9 +2,15 @@
   {
     "code": "001",
     "title": "Joker Out ",
-    "role": "",
+    "role": "vfx · greenscreen · animation",
     "year": "2026",
     "media": [
+      {
+        "type": "image",
+        "cat": "stills",
+        "caption": "",
+        "src": "img/jokerout05-comped.png"
+      },
       {
         "type": "video",
         "cat": "stills",
@@ -20,12 +26,42 @@
         "after": "img/jokerout01-green.png",
         "labelBefore": "BEFORE",
         "labelAfter": "AFTER"
-      },
+      }
+    ]
+  },
+  {
+    "code": "002",
+    "title": "Big Bang",
+    "role": "vfx · animation · look development",
+    "year": "2024",
+    "media": [
+      {
+        "type": "video",
+        "cat": "stills",
+        "caption": "",
+        "src": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4",
+        "poster": ""
+      }
+    ]
+  },
+  {
+    "code": "003",
+    "title": "Broken Lock",
+    "role": "music video · look development · animation",
+    "year": "2024",
+    "media": [
       {
         "type": "image",
         "cat": "stills",
         "caption": "",
-        "src": "img/jokerout05-comped.png"
+        "src": "img/bl-03-1.png"
+      },
+      {
+        "type": "video",
+        "cat": "stills",
+        "caption": "",
+        "src": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264.mp4",
+        "poster": ""
       }
     ]
   }
