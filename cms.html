@@ -158,29 +158,49 @@
   .files-note code{ color:var(--safe); }
   .empty{ color:var(--ink-faint); font-size:.65rem; letter-spacing:.06em; padding:1rem 0; }
 
-  /* pill / tag input */
-  .pill-input{
+  /* disciplines palette */
+  .disc-section{ margin-bottom:.8rem; }
+  .disc-list{ display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.5rem; min-height:1.4rem; }
+  .disc-entry{ display:inline-flex; align-items:center; gap:.15rem; }
+  .disc-pill-btn{
+    display:inline-flex; align-items:center;
+    background:var(--pd,#1d6a70); color:var(--pc,#34b3bd); border:1px solid var(--pc,#34b3bd);
+    border-radius:2px; padding:.15rem .5rem;
+    font:inherit; font-size:.6rem; letter-spacing:.12em; text-transform:uppercase;
+    cursor:pointer; white-space:nowrap; transition:filter .12s;
+  }
+  .disc-pill-btn:hover{ filter:brightness(1.2); }
+  .disc-del-btn{
+    background:none; border:none; padding:0 .15rem; color:var(--ink-faint);
+    cursor:pointer; font-size:.75rem; line-height:1;
+  }
+  .disc-del-btn:hover{ color:var(--bad); }
+  .disc-add-row{ display:flex; gap:.4rem; }
+  .disc-add-row input{ flex:1; }
+
+  /* role picker inside project editor */
+  .disc-picker{
     display:flex; flex-wrap:wrap; gap:.3rem; align-items:center;
     background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius);
     padding:.3rem .45rem; min-height:34px; cursor:text;
   }
-  .pill-input:focus-within{ border-color:var(--safe-dim); }
-  .pill{
-    display:flex; align-items:center; gap:.3rem;
-    background:var(--safe-dim); color:var(--safe);
-    border-radius:2px; padding:.15rem .45rem;
-    font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap;
+  .disc-picker:focus-within{ border-color:var(--safe-dim); }
+  .disc-opt{
+    display:inline-flex; align-items:center;
+    border-radius:2px; padding:.15rem .5rem; border:1px solid transparent;
+    font-size:.6rem; letter-spacing:.12em; text-transform:uppercase;
+    cursor:pointer; white-space:nowrap; color:var(--ink-faint); background:#1a1a1e;
+    transition:color .12s,background .12s,border-color .12s;
   }
-  .pill-rm{
-    background:none; border:none; padding:0; color:inherit; opacity:.7;
-    cursor:pointer; font-size:.8rem; line-height:1; font-family:inherit;
+  .disc-opt:hover{ color:var(--ink); border-color:var(--line); }
+  .disc-opt.active{
+    background:var(--pd,#1d6a70); color:var(--pc,#34b3bd); border-color:var(--pc,#34b3bd);
   }
-  .pill-rm:hover{ opacity:1; }
-  .pill-input input{
+  .disc-picker input{
     background:none; border:none; color:var(--ink); font:inherit;
     flex:1; min-width:80px; padding:.1rem .2rem;
   }
-  .pill-input input:focus{ outline:none; }
+  .disc-picker input:focus{ outline:none; }
 
   @media (max-width:1100px){ .wrap{ grid-template-columns:1fr; } .pv{ position:static; } }
 </style>
@@ -220,12 +240,23 @@
 const CATS = [["stills","Stills"],["bts","BTS"],["breakdown","Breakdown"]];
 const TYPES = ["image","video","model","compare"];
 const FOLDER = { image:"img", video:"video", model:"models", compare:"img" };
+const COLORS = [
+  {id:"teal",   hex:"#34b3bd", dim:"#1d6a70"},
+  {id:"amber",  hex:"#c9913a", dim:"#7a5520"},
+  {id:"coral",  hex:"#d2503a", dim:"#7a2a1a"},
+  {id:"sage",   hex:"#6aaa6e", dim:"#3a603c"},
+  {id:"violet", hex:"#9b6ec8", dim:"#5a3a78"},
+  {id:"slate",  hex:"#8a9bb5", dim:"#445068"},
+  {id:"rose",   hex:"#c86e8e", dim:"#7a3a52"},
+  {id:"gold",   hex:"#d4b85a", dim:"#7a6628"},
+];
 
 let data = [];
 let sel = 0;
 let pvCat = "stills", pvIdx = 0;
 const blobUrls = {};                 // path -> objectURL for local preview
 let fileHandle = null;               // FileSystemFileHandle for direct save
+let disciplines = [];                // [{label, color}] — global tag palette
 
 const $ = s => document.querySelector(s);
 const statusEl = $("#status");
@@ -276,10 +307,21 @@ async function restoreHandle(){
 /* ---------- load ---------- */
 async function init(){
   let loaded = restore();
+  // migrate old separate disc key if disciplines not loaded yet
+  if(!disciplines.length){
+    try{ const s=localStorage.getItem("fir_cms_disc"); if(s) disciplines=JSON.parse(s)||[]; }catch(e){}
+  }
   if(!loaded){
     try{
       const r = await fetch("data/projects.json",{cache:"no-store"});
-      if(r.ok){ data = await r.json(); }
+      if(r.ok){
+        const j = await r.json();
+        if(Array.isArray(j)){ data=j; }
+        else{
+          data=j.projects||[];
+          if(j.disciplines) disciplines=j.disciplines.map(d=>({label:d.label,color:d.color||"teal"}));
+        }
+      }
     }catch(e){ /* file:// or missing */ }
   }
   if(!Array.isArray(data)) data = [];
@@ -289,13 +331,18 @@ async function init(){
 
 /* ---------- autosave ---------- */
 function save(){
-  try{ localStorage.setItem("fir_cms_draft", JSON.stringify(data)); }catch(e){}
+  try{ localStorage.setItem("fir_cms_draft", JSON.stringify({disciplines,projects:data})); }catch(e){}
   statusEl.textContent = "draft saved · " + new Date().toLocaleTimeString();
 }
 function restore(){
   try{
     const s = localStorage.getItem("fir_cms_draft");
-    if(s){ data = JSON.parse(s); return true; }
+    if(s){
+      const d=JSON.parse(s);
+      if(Array.isArray(d)){ data=d; } // legacy format
+      else{ data=d.projects||[]; if(d.disciplines) disciplines=d.disciplines; }
+      return true;
+    }
   }catch(e){}
   return false;
 }
@@ -323,6 +370,53 @@ function newMedia(type){
   return base;
 }
 
+/* ---------- disciplines palette ---------- */
+function saveDisciplines(){ save(); }
+function colorFor(id){ return COLORS.find(c=>c.id===id)||COLORS[0]; }
+function nextColor(){ return COLORS[disciplines.length%COLORS.length].id; }
+function cycleColor(id){ const i=COLORS.findIndex(c=>c.id===id); return COLORS[(i+1)%COLORS.length].id; }
+function rolePillsOf(p){ return (p.role||"").split("·").map(s=>s.trim()).filter(Boolean); }
+
+function renderDiscHtml(){
+  return `<div class="disc-section">
+    <h2>Disciplines</h2>
+    <div class="disc-list">
+      ${disciplines.map((d,i)=>{const c=colorFor(d.color);
+        return `<span class="disc-entry">
+          <button class="disc-pill-btn" style="--pc:${c.hex};--pd:${c.dim}" data-dcycle="${i}" title="click to cycle colour">${esc(d.label)}</button>
+          <button class="disc-del-btn" data-ddel="${i}">×</button>
+        </span>`;}).join("")}
+    </div>
+    <div class="disc-add-row">
+      <input type="text" id="discNewInp" placeholder="new discipline…" autocomplete="off">
+      <button id="discAddBtn">+ Add</button>
+    </div>
+  </div><hr>`;
+}
+
+function attachDiscHandlers(){
+  document.querySelectorAll("[data-dcycle]").forEach(btn=>{
+    btn.onclick=()=>{ const i=+btn.dataset.dcycle; disciplines[i].color=cycleColor(disciplines[i].color); saveDisciplines(); renderAll(); };
+  });
+  document.querySelectorAll("[data-ddel]").forEach(btn=>{
+    btn.onclick=()=>{
+      const label=disciplines[+btn.dataset.ddel].label;
+      disciplines.splice(+btn.dataset.ddel,1);
+      saveDisciplines();
+      data.forEach(p=>{ p.role=rolePillsOf(p).filter(v=>v!==label).join(" · "); });
+      renderAll();
+    };
+  });
+  const inp=$("#discNewInp"), addBtn=$("#discAddBtn"); if(!inp) return;
+  function addDisc(){
+    const v=inp.value.trim(); if(!v) return;
+    if(!disciplines.find(d=>d.label===v)){ disciplines.push({label:v,color:nextColor()}); saveDisciplines(); }
+    inp.value=""; renderAll();
+  }
+  addBtn.onclick=addDisc;
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); addDisc(); } });
+}
+
 /* ---------- render ---------- */
 function renderAll(){ renderProjects(); renderEditor(); renderPreview(); save(); }
 
@@ -342,9 +436,14 @@ function renderProjects(){
 
 function renderEditor(){
   const el = $("#editor");
-  if(!data.length || !data[sel]){ el.innerHTML='<h2>Editor</h2><div class="empty">Select or add a project.</div>'; return; }
+  const discHtml = renderDiscHtml();
+  if(!data.length || !data[sel]){
+    el.innerHTML = discHtml + '<h2>Editor</h2><div class="empty">Select or add a project.</div>';
+    attachDiscHandlers(); return;
+  }
   const p = data[sel];
-  el.innerHTML = `
+  function rolePills(){ return rolePillsOf(p); }
+  el.innerHTML = discHtml + `
     <h2>Edit project ${String(sel+1).padStart(2,"0")}</h2>
     <div class="row">
       <div class="field"><label>Code</label><input type="text" id="f_code" value="${esc(p.code)}"></div>
@@ -352,9 +451,16 @@ function renderEditor(){
     </div>
     <div class="row2">
       <div class="field"><label>Role / disciplines</label>
-        <div class="pill-input" id="f_role_wrap">
-          ${(p.role||"").split("·").map(s=>s.trim()).filter(Boolean).map(v=>`<span class="pill" data-v="${esc(v)}">${esc(v)}<button class="pill-rm" tabindex="-1">×</button></span>`).join("")}
-          <input type="text" id="f_role_inp" placeholder="type & enter…" autocomplete="off">
+        <div class="disc-picker" id="f_role_wrap">
+          ${disciplines.map(d=>{
+            const active=rolePills().includes(d.label);
+            const c=colorFor(d.color);
+            return `<span class="disc-opt${active?" active":""}" data-label="${esc(d.label)}" style="--pc:${c.hex};--pd:${c.dim}">${esc(d.label)}</span>`;
+          }).join("")}
+          ${rolePills().filter(v=>!disciplines.find(d=>d.label===v)).map(v=>
+            `<span class="disc-opt active" data-label="${esc(v)}" style="--pc:#8a8880;--pd:#3a3a3e">${esc(v)}</span>`
+          ).join("")}
+          <input type="text" id="f_role_inp" placeholder="${disciplines.length?"or add new…":"add discipline…"}" autocomplete="off">
         </div>
       </div>
       <div class="field"><label>Year</label><input type="text" id="f_year" value="${esc(p.year)}"></div>
@@ -371,30 +477,24 @@ function renderEditor(){
   $("#delProj").onclick = ()=>{ if(confirm("Delete this project?")){ data.splice(sel,1); sel=Math.max(0,sel-1); renderAll(); } };
   $("#addMedia").onclick = ()=>{ (p.media=p.media||[]).push(newMedia("image")); renderAll(); };
   renderMedias(p);
+  attachDiscHandlers();
 
-  // pill input for role
+  // role picker: click a chip to toggle, type + Enter to add new discipline
   const roleWrap=$("#f_role_wrap"), roleInp=$("#f_role_inp");
-  function rolePills(){ return (p.role||"").split("·").map(s=>s.trim()).filter(Boolean); }
-  function commitPill(){
-    const v=roleInp.value.replace(/,/g,"").trim();
-    if(v && !rolePills().includes(v)) p.role=[...rolePills(),v].join(" · ");
-    renderAll();
-    setTimeout(()=>{ const i=$("#f_role_inp"); if(i) i.focus(); },0);
-  }
-  roleInp.addEventListener("keydown",e=>{
-    if(e.key==="Enter"||e.key===","){ e.preventDefault(); commitPill(); }
-    else if(e.key==="Backspace"&&!roleInp.value){
-      const pills=rolePills(); if(!pills.length) return;
-      p.role=pills.slice(0,-1).join(" · ");
-      renderAll(); setTimeout(()=>{ const i=$("#f_role_inp"); if(i) i.focus(); },0);
-    }
-  });
   roleWrap.addEventListener("click",e=>{
-    if(e.target.classList.contains("pill-rm")){
-      const v=e.target.closest(".pill").dataset.v;
-      p.role=rolePills().filter(x=>x!==v).join(" · ");
+    const opt=e.target.closest(".disc-opt"); if(!opt){ roleInp.focus(); return; }
+    const label=opt.dataset.label, pills=rolePills();
+    p.role=(pills.includes(label)?pills.filter(v=>v!==label):[...pills,label]).join(" · ");
+    renderAll();
+  });
+  roleInp.addEventListener("keydown",e=>{
+    if(e.key==="Enter"||e.key===","){
+      e.preventDefault();
+      const v=roleInp.value.replace(/,/g,"").trim(); if(!v) return;
+      if(!disciplines.find(d=>d.label===v)){ disciplines.push({label:v,color:nextColor()}); saveDisciplines(); }
+      if(!rolePills().includes(v)) p.role=[...rolePills(),v].join(" · ");
       renderAll();
-    } else { roleInp.focus(); }
+    }
   });
 
   function bind(id,key){ const i=$("#"+id); i.oninput=()=>{ p[key]=i.value; renderProjects(); renderPreview(); save(); }; }
@@ -592,8 +692,8 @@ function dragReorder(node, cls, arr, idx){
 function esc(v){ return (v==null?"":String(v)).replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
 function swap(a,i,j){ const t=a[i]; a[i]=a[j]; a[j]=t; }
 function clean(){
-  // strip nothing special — blob paths stay as relative paths, which is what we want
-  return JSON.stringify(data,null,2);
+  const disciplinesOut=disciplines.map(d=>{ const c=colorFor(d.color); return {label:d.label,color:d.color,hex:c.hex,dim:c.dim}; });
+  return JSON.stringify({disciplines:disciplinesOut,projects:data},null,2);
 }
 
 /* ---------- toolbar ---------- */

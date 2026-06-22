@@ -206,8 +206,15 @@
   }
   .v-sub{
     font-size:.62rem; letter-spacing:.2em; text-transform:uppercase;
-    color:var(--ink-dim); margin-top:.4rem;
+    margin-top:.4rem; display:flex; flex-wrap:wrap; gap:.3rem; align-items:center;
   }
+  .role-pill{
+    display:inline-flex; align-items:center;
+    background:var(--pd,transparent); color:var(--pc,var(--ink-dim));
+    border:1px solid var(--pc,transparent); border-radius:2px;
+    padding:.1rem .42rem;
+  }
+  .role-pill.plain{ color:var(--ink-dim); }
   .v-year{
     font-size:.62rem; letter-spacing:.2em; color:var(--ink-faint);
     white-space:nowrap;
@@ -473,6 +480,18 @@ const CATS = [
 /* The CMS writes data/projects.json. If present it overrides the inline
    defaults below; if missing (or opened over file://) we fall back to them. */
 let PROJECTS = DEFAULT_PROJECTS;
+let DISCIPLINES = [];   // [{label, hex, dim}] loaded from projects.json
+
+const COLORS = [
+  {id:"teal",   hex:"#34b3bd", dim:"#1d6a70"},
+  {id:"amber",  hex:"#c9913a", dim:"#7a5520"},
+  {id:"coral",  hex:"#d2503a", dim:"#7a2a1a"},
+  {id:"sage",   hex:"#6aaa6e", dim:"#3a603c"},
+  {id:"violet", hex:"#9b6ec8", dim:"#5a3a78"},
+  {id:"slate",  hex:"#8a9bb5", dim:"#445068"},
+  {id:"rose",   hex:"#c86e8e", dim:"#7a3a52"},
+  {id:"gold",   hex:"#d4b85a", dim:"#7a6628"},
+];
 
 /* ---- state ------------------------------------------------------------- */
 let curProj = 0, curCat = "stills", curMedia = 0;
@@ -529,7 +548,7 @@ function selectProject(i){
   });
   const p=PROJECTS[i];
   vTitle.textContent=p.title;
-  vSub.textContent=p.role;
+  vSub.innerHTML=renderRolePills(p.role);
   vYear.textContent=`${p.code} / ${p.year}`;
   // pick first category that has media
   const firstCat=CATS.find(c=>p.media.some(m=>m.cat===c.id));
@@ -764,12 +783,29 @@ addEventListener("keydown",e=>{
 });
 
 /* ---- boot -------------------------------------------------------------- */
+function renderRolePills(role){
+  if(!role) return "";
+  return role.split("·").map(s=>s.trim()).filter(Boolean).map(label=>{
+    const d=DISCIPLINES.find(x=>x.label===label);
+    if(d) return `<span class="role-pill" style="--pc:${d.hex};--pd:${d.dim}">${label}</span>`;
+    return `<span class="role-pill plain">${label}</span>`;
+  }).join("");
+}
+
 async function loadProjects(){
   try{
     const r=await fetch("data/projects.json",{cache:"no-store"});
     if(r.ok){
       const j=await r.json();
-      if(Array.isArray(j) && j.length) PROJECTS=j;
+      if(Array.isArray(j)){
+        if(j.length) PROJECTS=j;
+      } else {
+        if(j.projects && j.projects.length) PROJECTS=j.projects;
+        if(j.disciplines) DISCIPLINES=j.disciplines.map(d=>{
+          const c=COLORS.find(x=>x.id===d.color)||{hex:d.hex||"#8a8880",dim:d.dim||"#3a3a3e"};
+          return {label:d.label, hex:d.hex||c.hex, dim:d.dim||c.dim};
+        });
+      }
     }
   }catch(e){ /* file:// or missing json -> keep inline defaults */ }
   rail.innerHTML='<div class="rail-head">Reel / Index</div>';

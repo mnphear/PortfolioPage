@@ -1,68 +1,123 @@
-[
-  {
-    "code": "001",
-    "title": "Joker Out ",
-    "role": "vfx · greenscreen · animation",
-    "year": "2026",
-    "media": [
-      {
-        "type": "image",
-        "cat": "stills",
-        "caption": "",
-        "src": "img/jokerout05-comped.png"
-      },
-      {
-        "type": "video",
-        "cat": "stills",
-        "caption": "",
-        "src": "video/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264.mp4",
-        "poster": ""
-      },
-      {
-        "type": "compare",
-        "cat": "stills",
-        "caption": "",
-        "before": "img/jokerout01-comped-1.png",
-        "after": "img/jokerout01-green.png",
-        "labelBefore": "BEFORE",
-        "labelAfter": "AFTER"
-      }
-    ]
-  },
-  {
-    "code": "002",
-    "title": "Big Bang",
-    "role": "vfx · animation · look development",
-    "year": "2024",
-    "media": [
-      {
-        "type": "video",
-        "cat": "stills",
-        "caption": "",
-        "src": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4",
-        "poster": ""
-      }
-    ]
-  },
-  {
-    "code": "003",
-    "title": "Broken Lock",
-    "role": "music video · look development · animation",
-    "year": "2024",
-    "media": [
-      {
-        "type": "image",
-        "cat": "stills",
-        "caption": "",
-        "src": "img/bl-03-1.png"
-      },
-      {
-        "type": "video",
-        "cat": "stills",
-        "caption": "",
-        "src": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264.mp4",
-        "poster": ""
-      }
-    ]
-  }
-]
+{
+  "disciplines": [
+    {
+      "label": "vfx",
+      "color": "teal",
+      "hex": "#34b3bd",
+      "dim": "#1d6a70"
+    },
+    {
+      "label": "greenscreen",
+      "color": "sage",
+      "hex": "#6aaa6e",
+      "dim": "#3a603c"
+    },
+    {
+      "label": "animation",
+      "color": "coral",
+      "hex": "#d2503a",
+      "dim": "#7a2a1a"
+    },
+    {
+      "label": "Look development",
+      "color": "violet",
+      "hex": "#9b6ec8",
+      "dim": "#5a3a78"
+    },
+    {
+      "label": "Music video",
+      "color": "slate",
+      "hex": "#8a9bb5",
+      "dim": "#445068"
+    }
+  ],
+  "projects": [
+    {
+      "code": "001",
+      "title": "Joker Out ",
+      "role": "vfx · greenscreen · animation",
+      "year": "2026",
+      "media": [
+        {
+          "type": "image",
+          "cat": "stills",
+          "caption": "",
+          "src": "img/jokerout05-comped.png"
+        },
+        {
+          "type": "video",
+          "cat": "stills",
+          "caption": "",
+          "src": "video/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264.mp4",
+          "poster": ""
+        },
+        {
+          "type": "compare",
+          "cat": "stills",
+          "caption": "",
+          "before": "img/jokerout01-comped-1.png",
+          "after": "img/jokerout01-green.png",
+          "labelBefore": "BEFORE",
+          "labelAfter": "AFTER"
+        }
+      ]
+    },
+    {
+      "code": "002",
+      "title": "Big Bang",
+      "role": "vfx · animation · greenscreen · Look development",
+      "year": "2024",
+      "media": [
+        {
+          "type": "video",
+          "cat": "stills",
+          "caption": "",
+          "src": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4",
+          "poster": ""
+        }
+      ]
+    },
+    {
+      "code": "003",
+      "title": "Broken Lock",
+      "role": "animation · vfx · greenscreen · Look development · Music video",
+      "year": "2024",
+      "media": [
+        {
+          "type": "image",
+          "cat": "stills",
+          "caption": "",
+          "src": "img/bl-03-1.png"
+        },
+        {
+          "type": "video",
+          "cat": "stills",
+          "caption": "",
+          "src": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264.mp4",
+          "poster": ""
+        }
+      ]
+    },
+    {
+      "code": "004",
+      "title": "Maxim",
+      "role": "",
+      "year": "2026",
+      "media": [
+        {
+          "type": "image",
+          "cat": "stills",
+          "caption": "",
+          "src": "img/maxim-01.png"
+        },
+        {
+          "type": "video",
+          "cat": "stills",
+          "caption": "",
+          "src": "video/maxim-premium-mandelj-full-prores422.mov",
+          "poster": ""
+        }
+      ]
+    }
+  ]
+}
