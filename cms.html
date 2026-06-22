@@ -29,7 +29,7 @@
 <title>Fir // CMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link id="gfonts" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0a0a0b; --panel:#121214; --panel2:#0e0e10; --line:#232327;
@@ -202,6 +202,12 @@
   }
   .disc-picker input:focus{ outline:none; }
 
+  .about-photo-preview{
+    width:100%; aspect-ratio:1/1; background:#000; border:1px solid var(--line);
+    border-radius:var(--radius); overflow:hidden; position:relative; margin-top:.4rem;
+  }
+  .about-photo-preview img{ width:100%; height:100%; object-fit:cover; display:block; }
+
   @media (max-width:1100px){ .wrap{ grid-template-columns:1fr; } .pv{ position:static; } }
 </style>
 </head>
@@ -240,6 +246,22 @@
 const CATS = [["stills","Stills"],["bts","BTS"],["breakdown","Breakdown"]];
 const TYPES = ["image","video","model","compare"];
 const FOLDER = { image:"img", video:"video", model:"models", compare:"img" };
+const FONTS = [
+  { id:"default",     label:"Big Shoulders + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"bebas-space",  label:"Bebas Neue + Space Mono",
+    url:"https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" },
+  { id:"barlow-jet",   label:"Barlow Condensed + JetBrains",
+    url:"https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=JetBrains+Mono:wght@400;500;600&display=swap" },
+  { id:"oswald-fira",  label:"Oswald + Fira Mono",
+    url:"https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Fira+Mono:wght@400;500&display=swap" },
+  { id:"syne-roboto",  label:"Syne + Roboto Mono",
+    url:"https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Roboto+Mono:wght@400;500&display=swap" },
+  { id:"russo-space",  label:"Russo One + Space Mono",
+    url:"https://fonts.googleapis.com/css2?family=Russo+One&family=Space+Mono:wght@400;700&display=swap" },
+  { id:"akira-space",  label:"Akira Expanded + Space Mono", url:null },
+];
+
 const COLORS = [
   {id:"teal",   hex:"#34b3bd", dim:"#1d6a70"},
   {id:"amber",  hex:"#c9913a", dim:"#7a5520"},
@@ -257,6 +279,7 @@ let pvCat = "stills", pvIdx = 0;
 const blobUrls = {};                 // path -> objectURL for local preview
 let fileHandle = null;               // FileSystemFileHandle for direct save
 let disciplines = [];                // [{label, color}] — global tag palette
+let about = {name:"Martin Fir",bio:"",location:"Ljubljana",photo:"",email:"hello@martinfir.com",instagram:"",imdb:"",font:"default"};
 
 const $ = s => document.querySelector(s);
 const statusEl = $("#status");
@@ -320,18 +343,22 @@ async function init(){
         else{
           data=j.projects||[];
           if(j.disciplines) disciplines=j.disciplines.map(d=>({label:d.label,color:d.color||"teal"}));
+          if(j.about) Object.assign(about,j.about);
         }
       }
     }catch(e){ /* file:// or missing */ }
   }
   if(!Array.isArray(data)) data = [];
+  const initFont=FONTS.find(x=>x.id===about.font)||FONTS[0];
+  const gf=document.getElementById("gfonts");
+  if(initFont.url){ gf.href=initFont.url; gf.disabled=false; } else { gf.disabled=true; }
   renderAll();
   restoreHandle();
 }
 
 /* ---------- autosave ---------- */
 function save(){
-  try{ localStorage.setItem("fir_cms_draft", JSON.stringify({disciplines,projects:data})); }catch(e){}
+  try{ localStorage.setItem("fir_cms_draft", JSON.stringify({about,disciplines,projects:data})); }catch(e){}
   statusEl.textContent = "draft saved · " + new Date().toLocaleTimeString();
 }
 function restore(){
@@ -340,7 +367,11 @@ function restore(){
     if(s){
       const d=JSON.parse(s);
       if(Array.isArray(d)){ data=d; } // legacy format
-      else{ data=d.projects||[]; if(d.disciplines) disciplines=d.disciplines; }
+      else{
+        data=d.projects||[];
+        if(d.disciplines) disciplines=d.disciplines;
+        if(d.about) Object.assign(about,d.about);
+      }
       return true;
     }
   }catch(e){}
@@ -368,6 +399,67 @@ function newMedia(type){
   if(type==="video"){ base.src=""; base.poster=""; }
   if(type==="compare"){ base.before=""; base.after=""; base.labelBefore="BEFORE"; base.labelAfter="AFTER"; }
   return base;
+}
+
+/* ---------- about / contact ---------- */
+function renderAboutHtml(){
+  return `<div class="disc-section">
+    <h2>About / Contact</h2>
+    <div class="row2" style="align-items:start">
+      <div>
+        <div class="field"><label>Name</label><input type="text" id="ab_name" value="${esc(about.name)}"></div>
+        <div class="field"><label>Bio</label><textarea id="ab_bio" rows="3" style="resize:vertical;min-height:60px">${esc(about.bio)}</textarea></div>
+        <div class="field"><label>Location</label><input type="text" id="ab_location" value="${esc(about.location)}"></div>
+        <div class="field"><label>Email</label><input type="text" id="ab_email" value="${esc(about.email)}"></div>
+        <div class="field"><label>Instagram handle</label><input type="text" id="ab_instagram" value="${esc(about.instagram)}" placeholder="@handle"></div>
+        <div class="field"><label>IMDb URL</label><input type="text" id="ab_imdb" value="${esc(about.imdb)}" placeholder="https://imdb.com/name/..."></div>
+        <div class="field"><label>Font pair</label>
+          <select id="ab_font">
+            ${FONTS.map(f=>`<option value="${f.id}"${f.id===about.font?" selected":""}>${f.label}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Photo</label>
+        <div class="pick">
+          <input class="path" type="text" id="ab_photo" value="${esc(about.photo)}" placeholder="img/photo.jpg">
+          <label class="filebtn">Pick<input type="file" id="ab_photo_file" accept="image/*"></label>
+        </div>
+        <div class="about-photo-preview" id="ab_photo_preview">
+          ${about.photo?`<img src="${resolveSrc(about.photo)}" alt="">`:`<span class="plate p1"></span>`}
+        </div>
+      </div>
+    </div>
+  </div><hr>`;
+}
+function attachAboutHandlers(){
+  const fontSel=document.getElementById("ab_font");
+  if(fontSel) fontSel.onchange=()=>{
+    about.font=fontSel.value;
+    const f=FONTS.find(x=>x.id===fontSel.value)||FONTS[0];
+    const gf2=document.getElementById("gfonts");
+    if(f.url){ gf2.href=f.url; gf2.disabled=false; } else { gf2.disabled=true; }
+    save();
+  };
+  [["ab_name","name"],["ab_bio","bio"],["ab_location","location"],
+   ["ab_email","email"],["ab_instagram","instagram"],["ab_imdb","imdb"]].forEach(([id,key])=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.oninput=()=>{ about[key]=el.value; save(); };
+  });
+  const pathInp=document.getElementById("ab_photo");
+  const filePick=document.getElementById("ab_photo_file");
+  if(pathInp) pathInp.oninput=()=>{ about.photo=pathInp.value; updateAboutPreview(); save(); };
+  if(filePick) filePick.onchange=()=>{
+    const file=filePick.files[0]; if(!file) return;
+    const path="img/"+sanitize(file.name);
+    blobUrls[path]=URL.createObjectURL(file);
+    about.photo=path; if(pathInp) pathInp.value=path;
+    updateAboutPreview(); save();
+  };
+}
+function updateAboutPreview(){
+  const el=document.getElementById("ab_photo_preview"); if(!el) return;
+  const s=resolveSrc(about.photo);
+  el.innerHTML=s?`<img src="${s}" alt="">`:`<span class="plate p1"></span>`;
 }
 
 /* ---------- disciplines palette ---------- */
@@ -436,14 +528,15 @@ function renderProjects(){
 
 function renderEditor(){
   const el = $("#editor");
+  const aboutHtml = renderAboutHtml();
   const discHtml = renderDiscHtml();
   if(!data.length || !data[sel]){
-    el.innerHTML = discHtml + '<h2>Editor</h2><div class="empty">Select or add a project.</div>';
-    attachDiscHandlers(); return;
+    el.innerHTML = aboutHtml + discHtml + '<h2>Editor</h2><div class="empty">Select or add a project.</div>';
+    attachAboutHandlers(); attachDiscHandlers(); return;
   }
   const p = data[sel];
   function rolePills(){ return rolePillsOf(p); }
-  el.innerHTML = discHtml + `
+  el.innerHTML = aboutHtml + discHtml + `
     <h2>Edit project ${String(sel+1).padStart(2,"0")}</h2>
     <div class="row">
       <div class="field"><label>Code</label><input type="text" id="f_code" value="${esc(p.code)}"></div>
@@ -477,7 +570,7 @@ function renderEditor(){
   $("#delProj").onclick = ()=>{ if(confirm("Delete this project?")){ data.splice(sel,1); sel=Math.max(0,sel-1); renderAll(); } };
   $("#addMedia").onclick = ()=>{ (p.media=p.media||[]).push(newMedia("image")); renderAll(); };
   renderMedias(p);
-  attachDiscHandlers();
+  attachAboutHandlers(); attachDiscHandlers();
 
   // role picker: click a chip to toggle, type + Enter to add new discipline
   const roleWrap=$("#f_role_wrap"), roleInp=$("#f_role_inp");
@@ -656,6 +749,7 @@ function paintPreviewMain(m){
 /* checklist of local files still to drop into the repo */
 function filesNote(){
   const items=[];
+  if(about.photo && blobUrls[about.photo]) items.push(about.photo);
   data.forEach(p=>(p.media||[]).forEach(m=>{
     ["src","poster","before","after"].forEach(k=>{
       if(m[k] && blobUrls[m[k]]) items.push(m[k]);
@@ -693,7 +787,7 @@ function esc(v){ return (v==null?"":String(v)).replace(/"/g,"&quot;").replace(/<
 function swap(a,i,j){ const t=a[i]; a[i]=a[j]; a[j]=t; }
 function clean(){
   const disciplinesOut=disciplines.map(d=>{ const c=colorFor(d.color); return {label:d.label,color:d.color,hex:c.hex,dim:c.dim}; });
-  return JSON.stringify({disciplines:disciplinesOut,projects:data},null,2);
+  return JSON.stringify({about,disciplines:disciplinesOut,projects:data},null,2);
 }
 
 /* ---------- toolbar ---------- */

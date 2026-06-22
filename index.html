@@ -52,7 +52,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link id="gfonts" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -66,17 +66,25 @@
     --safe:      #34b3bd;   /* DI-suite teal accent            */
     --safe-dim:  #1d6a70;
     --radius:    3px;
+    --font-d:    "Big Shoulders Display";
+    --font-m:    "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  @font-face{
+    font-family:"Akira Expanded";
+    src:url("fonts/akira-expanded.woff2") format("woff2");
+    font-weight:800; font-style:normal; font-display:swap;
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
 
-  html,body{ height:100%; }
+  html{ height:100%; }
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:"IBM Plex Mono", ui-monospace, monospace;
-    overflow:hidden;                 /* the whole point: no page scroll */
-    cursor:crosshair;
+    font-family:var(--font-m);
+    overflow:auto;
+    cursor:auto;
     -webkit-font-smoothing:antialiased;
   }
 
@@ -97,7 +105,7 @@
 
   /* ---- app shell ------------------------------------------------------ */
   .app{
-    height:100vh; height:100dvh;
+    min-height:100vh; min-height:100dvh;
     display:grid;
     grid-template-rows:auto 1fr;
   }
@@ -110,10 +118,12 @@
   }
   .brand{ display:flex; align-items:baseline; gap:.8rem; }
   .brand h1{
-    font-family:"Big Shoulders Display", sans-serif;
+    font-family:var(--font-d), sans-serif;
     font-weight:800; letter-spacing:.06em;
     font-size:1.5rem; line-height:1; text-transform:uppercase;
+    cursor:pointer; transition:opacity .15s;
   }
+  .brand h1:hover{ opacity:.75; }
   .brand h1 .lit{ color:var(--safe); }
   .brand .role{
     font-size:.62rem; letter-spacing:.32em; text-transform:uppercase;
@@ -128,15 +138,12 @@
   @keyframes blink{ 50%{opacity:.15} }
   .tc b{ color:var(--ink); font-weight:600; }
 
-  /* ---- stage: rail + viewer ------------------------------------------ */
-  .stage{
-    display:grid;
-    grid-template-columns:188px 1fr;                /* slim belt · content */
-    min-height:0;                                   /* let children scroll */
-  }
+  /* ---- stage --------------------------------------------------------- */
+  .stage{ display:block; }
 
-  /* ---- left: vertical carousel --------------------------------------- */
+  /* ---- left: vertical carousel (hidden) ------------------------------ */
   .rail{
+    display:none;
     border-right:1px solid var(--line);
     background:var(--bg-rail);
     overflow-y:auto;
@@ -171,7 +178,7 @@
     position:relative; background:#000;
     border:1px solid var(--line); margin-bottom:.4rem;
   }
-  .c-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .c-thumb img{ width:100%; height:100%; object-fit:contain; display:block; }
   .c-code{
     position:absolute; left:4px; bottom:3px;
     font-size:.5rem; letter-spacing:.1em; color:var(--ink-dim);
@@ -179,7 +186,7 @@
   }
   .c-body{ min-width:0; }
   .c-title{
-    font-family:"Big Shoulders Display", sans-serif;
+    font-family:var(--font-d), sans-serif;
     font-weight:700; font-size:.92rem; line-height:1;
     text-transform:uppercase; letter-spacing:.02em;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -190,9 +197,9 @@
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
 
-  /* ---- right: viewer -------------------------------------------------- */
+  /* ---- right: viewer (hidden) ---------------------------------------- */
   .viewer{
-    display:grid;
+    display:none;
     grid-template-rows:auto 1fr auto;
     min-height:0; min-width:0;
     padding:1rem 1.3rem 1.1rem;
@@ -200,7 +207,7 @@
   }
   .v-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; }
   .v-title{
-    font-family:"Big Shoulders Display", sans-serif;
+    font-family:var(--font-d), sans-serif;
     font-weight:800; font-size:2.1rem; line-height:.95;
     text-transform:uppercase; letter-spacing:.01em;
   }
@@ -312,7 +319,7 @@
   }
   .thumb:hover{ transform:translateY(-2px); }
   .thumb.active{ border-color:var(--safe); }
-  .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb img{ width:100%; height:100%; object-fit:contain; display:block; }
   .thumb .badge{
     position:absolute; top:3px; right:4px;
     font-size:.46rem; letter-spacing:.08em; color:var(--safe);
@@ -324,20 +331,151 @@
   .mail{ color:var(--ink-dim); text-decoration:none; font-size:.62rem; letter-spacing:.16em; }
   .mail:hover{ color:var(--safe); }
 
-  /* ---- mobile: stack, allow scroll ----------------------------------- */
-  @media (max-width:760px){
-    body{ overflow:auto; cursor:auto; }
-    .app{ height:auto; min-height:100dvh; }
-    .stage{ grid-template-columns:1fr; }
-    .rail{
-      border-right:none; border-bottom:1px solid var(--line);
-      display:flex; gap:.5rem; overflow-x:auto; overflow-y:hidden;
-      scroll-snap-type:x proximity;
-    }
-    .rail-head{ display:none; }
-    .card{ flex:none; width:128px; margin-bottom:0; scroll-snap-align:start; }
-    .v-main{ min-height:46vh; }
+  /* ---- flat project list (all screens) -------------------------------- */
+  .m-projects{
+    display:flex; flex-direction:column; gap:2.5rem;
+    padding:1rem 1rem 2rem;
   }
+  .m-proj{ display:flex; flex-direction:row; gap:.5rem; align-items:stretch; }
+  .m-proj-media{
+    flex:1; min-width:0;
+    aspect-ratio:16/9; position:relative;
+    background:#000; border:1px solid var(--line);
+    border-radius:var(--radius); overflow:hidden;
+  }
+  .m-proj-hero{ position:absolute; inset:0; }
+  .m-proj-hero img,.m-proj-hero video{ width:100%; height:100%; object-fit:contain; display:block; }
+  .m-proj-hero .plate{ position:absolute; inset:0; }
+  .m-proj-cap{
+    position:absolute; left:10px; top:10px;
+    font-size:.58rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink); background:rgba(0,0,0,.55);
+    padding:.22rem .5rem; border-radius:2px; backdrop-filter:blur(2px);
+    z-index:2; pointer-events:none;
+  }
+  .m-proj-cap:empty{ display:none; }
+  .m-proj-scrim{
+    position:absolute; bottom:0; left:0; right:0; height:62%;
+    background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 48%, transparent 100%);
+    pointer-events:none; z-index:1;
+  }
+  .m-proj-info{
+    position:absolute; bottom:0; left:0; right:0;
+    padding:.7rem .9rem; z-index:2;
+    transition:opacity .28s ease, transform .28s ease;
+  }
+  .m-proj-info.hidden{ opacity:0; transform:translateY(10px); pointer-events:none; }
+  .m-proj-title{
+    font-family:var(--font-d),sans-serif;
+    font-weight:800; font-size:1.8rem; line-height:.95;
+    text-transform:uppercase; letter-spacing:.01em;
+  }
+  .m-proj-sub{
+    display:flex; flex-wrap:wrap; gap:.3rem;
+    margin-top:.35rem; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
+  }
+  .m-proj-year{
+    font-size:.58rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-faint); margin-top:.25rem;
+  }
+  .m-proj-thumbs{
+    display:flex; flex-direction:column; gap:.35rem;
+    flex-shrink:0; width:58px;
+  }
+  .m-thumb{
+    width:58px; aspect-ratio:16/10; position:relative;
+    background:#000; border:1px solid var(--line);
+    border-radius:2px; overflow:hidden; flex-shrink:0;
+    transition:border-color .15s;
+  }
+  .m-thumb:hover{ border-color:var(--safe-dim); }
+  .m-thumb.active{ border-color:var(--safe); }
+  .m-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .m-thumb-badge{
+    position:absolute; bottom:2px; right:3px;
+    font-size:.42rem; color:var(--safe);
+    background:rgba(0,0,0,.7); padding:1px 3px; border-radius:2px;
+  }
+  @media (min-width:761px){
+    .m-projects{
+      padding:2.5rem 4rem 6rem;
+      gap:7rem;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    .m-proj{ gap:.75rem; }
+    .m-proj-thumbs{ width:82px; }
+    .m-thumb{ width:82px; }
+    .m-proj-title{ font-size:4.5rem; }
+    .m-proj-info{ padding:1.4rem 1.8rem; }
+    .m-proj-sub{ margin-top:.6rem; font-size:.65rem; }
+    .m-proj-year{ margin-top:.45rem; }
+  }
+
+  /* ---- about modal ------------------------------------------------------- */
+  @keyframes overlayIn {
+    from{ opacity:0; }
+    to{ opacity:1; }
+  }
+  @keyframes cardIn {
+    from{ transform:translate(-32px,-52px) scale(.72) rotate(-2deg); opacity:0; }
+    to{   transform:translate(0,0)         scale(1)   rotate(0deg);  opacity:1; }
+  }
+  @keyframes cardOut {
+    from{ transform:translate(0,0)         scale(1)   rotate(0deg);  opacity:1; }
+    to{   transform:translate(-20px,-36px) scale(.82) rotate(-1deg); opacity:0; }
+  }
+  .modal-overlay{
+    position:fixed; inset:0; z-index:80;
+    background:rgba(0,0,0,.78); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center; padding:1.5rem;
+    animation:overlayIn .2s ease forwards;
+  }
+  .modal-overlay[hidden]{ display:none; }
+  .about-card{
+    position:relative; display:flex; gap:1.4rem;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:1.6rem;
+    max-width:420px; width:100%;
+    box-shadow:0 24px 64px rgba(0,0,0,.6);
+    animation:cardIn .42s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  .about-card.closing{
+    animation:cardOut .22s cubic-bezier(.4,0,1,1) forwards;
+  }
+  .about-card-close{
+    position:absolute; top:.5rem; right:.6rem;
+    background:none; border:none; color:var(--ink-faint); font-size:1.1rem;
+    cursor:pointer; padding:.2rem .45rem; line-height:1; transition:color .12s;
+  }
+  .about-card-close:hover{ color:var(--ink); }
+  .about-photo{
+    flex-shrink:0; width:110px; height:110px;
+    border-radius:var(--radius); overflow:hidden; position:relative;
+    background:#000; border:1px solid var(--line);
+  }
+  .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .about-info{ display:flex; flex-direction:column; min-width:0; }
+  .about-name{
+    font-family:var(--font-d), sans-serif;
+    font-weight:800; font-size:1.7rem; text-transform:uppercase;
+    letter-spacing:.01em; line-height:.95; margin-bottom:.35rem;
+  }
+  .about-location{
+    font-size:.58rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:.7rem;
+  }
+  .about-bio{
+    font-size:.62rem; letter-spacing:.06em; color:var(--ink-dim);
+    line-height:1.65; margin-bottom:.9rem; flex:1;
+  }
+  .about-links{ display:flex; flex-wrap:wrap; gap:.35rem; }
+  .about-link{
+    font-size:.55rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-dim); border:1px solid var(--line); border-radius:var(--radius);
+    padding:.28rem .6rem; text-decoration:none; transition:color .12s, border-color .12s;
+  }
+  .about-link:hover{ color:var(--safe); border-color:var(--safe-dim); }
 
   @media (prefers-reduced-motion:reduce){
     .fx-grain{ animation:none; } .tc .dot{ animation:none; }
@@ -399,7 +537,28 @@
       </div>
     </section>
 
+    <!-- MOBILE: flat project list (hidden on desktop via CSS) -->
+    <div class="m-projects" id="mobileProjects"></div>
+
   </div>
+
+  <!-- about modal -->
+  <div class="modal-overlay" id="aboutOverlay" hidden>
+    <div class="about-card">
+      <button class="about-card-close" id="aboutClose">×</button>
+      <div class="about-photo">
+        <img id="aboutImg" src="" alt="" hidden>
+        <span class="plate p1" id="aboutPlate"></span>
+      </div>
+      <div class="about-info">
+        <div class="about-name" id="aboutName">Martin Fir</div>
+        <div class="about-location" id="aboutLocation"></div>
+        <div class="about-bio" id="aboutBio"></div>
+        <div class="about-links" id="aboutLinks"></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Three.js for the model media type -->
@@ -480,7 +639,33 @@ const CATS = [
 /* The CMS writes data/projects.json. If present it overrides the inline
    defaults below; if missing (or opened over file://) we fall back to them. */
 let PROJECTS = DEFAULT_PROJECTS;
-let DISCIPLINES = [];   // [{label, hex, dim}] loaded from projects.json
+let DISCIPLINES = [];
+let ABOUT = { name:"Martin Fir", bio:"", location:"Ljubljana", photo:"", email:"hello@martinfir.com", instagram:"", imdb:"", font:"default" };
+
+const FONTS = [
+  { id:"default",     label:"Big Shoulders + IBM Plex Mono", display:'"Big Shoulders Display"', mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"bebas-space",  label:"Bebas Neue + Space Mono",       display:'"Bebas Neue"',            mono:'"Space Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" },
+  { id:"barlow-jet",   label:"Barlow Condensed + JetBrains",  display:'"Barlow Condensed"',      mono:'"JetBrains Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=JetBrains+Mono:wght@400;500;600&display=swap" },
+  { id:"oswald-fira",  label:"Oswald + Fira Mono",            display:'"Oswald"',                mono:'"Fira Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Fira+Mono:wght@400;500&display=swap" },
+  { id:"syne-roboto",  label:"Syne + Roboto Mono",            display:'"Syne"',                  mono:'"Roboto Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Roboto+Mono:wght@400;500&display=swap" },
+  { id:"russo-space",  label:"Russo One + Space Mono",         display:'"Russo One"',              mono:'"Space Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Russo+One&family=Space+Mono:wght@400;700&display=swap" },
+  { id:"akira-space",  label:"Akira Expanded + Space Mono",    display:'"Akira Expanded"',         mono:'"Space Mono",ui-monospace,monospace',
+    url:null },
+];
+
+function applyFont(id){
+  const f=FONTS.find(x=>x.id===id)||FONTS[0];
+  const link=document.getElementById("gfonts");
+  if(f.url){ link.href=f.url; link.disabled=false; } else { link.disabled=true; }
+  document.documentElement.style.setProperty("--font-d", f.display);
+  document.documentElement.style.setProperty("--font-m", f.mono);
+}
 
 const COLORS = [
   {id:"teal",   hex:"#34b3bd", dim:"#1d6a70"},
@@ -783,6 +968,87 @@ addEventListener("keydown",e=>{
 });
 
 /* ---- boot -------------------------------------------------------------- */
+/* ---- about modal ------------------------------------------------------- */
+function openAbout(){
+  const a=ABOUT;
+  document.getElementById("aboutName").textContent = a.name||"Martin Fir";
+  document.getElementById("aboutLocation").textContent = a.location||"";
+  document.getElementById("aboutBio").textContent = a.bio||"";
+  const img=document.getElementById("aboutImg"), plate=document.getElementById("aboutPlate");
+  if(a.photo){ img.src=a.photo; img.hidden=false; plate.hidden=true; }
+  else{ img.hidden=true; plate.hidden=false; }
+  const links=document.getElementById("aboutLinks");
+  links.innerHTML="";
+  if(a.email)     links.innerHTML+=`<a class="about-link" href="mailto:${a.email}">Email</a>`;
+  if(a.instagram) links.innerHTML+=`<a class="about-link" href="https://instagram.com/${a.instagram.replace(/^@/,'')}" target="_blank" rel="noopener">Instagram</a>`;
+  if(a.imdb)      links.innerHTML+=`<a class="about-link" href="${a.imdb}" target="_blank" rel="noopener">IMDb</a>`;
+  document.getElementById("aboutOverlay").removeAttribute("hidden");
+}
+function closeAbout(){
+  const card=document.querySelector(".about-card");
+  card.classList.add("closing");
+  card.addEventListener("animationend",()=>{
+    document.getElementById("aboutOverlay").setAttribute("hidden","");
+    card.classList.remove("closing");
+  },{once:true});
+}
+document.getElementById("aboutOverlay").addEventListener("click",e=>{ if(e.target===e.currentTarget) closeAbout(); });
+document.getElementById("aboutClose").addEventListener("click", closeAbout);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeAbout(); });
+document.querySelector(".brand h1").addEventListener("click", openAbout);
+
+/* ---- flat project list ------------------------------------------------- */
+function projMediaHtml(m, pi){
+  if(!m) return `<span class="plate p${pi%4}"></span>`;
+  if(m.type==="image"&&m.src)      return `<img src="${m.src}" alt="" loading="lazy">`;
+  if(m.type==="video"&&m.src)      return `<video src="${m.src}"${m.poster?` poster="${m.poster}"`:""} autoplay muted loop playsinline></video>`;
+  if(m.type==="compare")           return `<img src="${m.after||m.before||""}" alt="" loading="lazy">`;
+  return `<span class="plate p${pi%4}"></span>`;
+}
+
+function buildMobileProjects(){
+  const el=document.getElementById("mobileProjects"); el.innerHTML="";
+  PROJECTS.forEach((p,pi)=>{
+    const hero=p.media.find(x=>x.cat==="stills")||p.media[0];
+    const thumbsHtml=p.media.map((m,mi)=>{
+      const badge=m.type==="video"?"▶":m.type==="model"?"◈":m.type==="compare"?"◫":"";
+      let tImg=`<span class="plate p${mi%4}"></span>`;
+      if(m.type==="image"&&m.src)                      tImg=`<img src="${m.src}" alt="" loading="lazy">`;
+      else if(m.type==="video"&&m.poster)               tImg=`<img src="${m.poster}" alt="" loading="lazy">`;
+      else if(m.type==="compare"&&(m.after||m.before))  tImg=`<img src="${m.after||m.before}" alt="" loading="lazy">`;
+      return `<div class="m-thumb${mi===0?" active":""}">${tImg}${badge?`<span class="m-thumb-badge">${badge}</span>`:""}</div>`;
+    }).join("");
+    const div=document.createElement("div");
+    div.className="m-proj";
+    div.innerHTML=`
+      <div class="m-proj-media">
+        <div class="m-proj-hero">${projMediaHtml(hero,pi)}</div>
+        <div class="m-proj-scrim"></div>
+        <div class="m-proj-cap">${hero?.caption||""}</div>
+        <div class="m-proj-info">
+          <div class="m-proj-title">${p.title}</div>
+          <div class="m-proj-sub">${renderRolePills(p.role)}</div>
+          <div class="m-proj-year">${p.code} / ${p.year}</div>
+        </div>
+      </div>
+      ${thumbsHtml?`<div class="m-proj-thumbs">${thumbsHtml}</div>`:""}`;
+    const heroEl=div.querySelector(".m-proj-hero");
+    const capEl=div.querySelector(".m-proj-cap");
+    const infoEl=div.querySelector(".m-proj-info");
+    div.querySelectorAll(".m-thumb").forEach((th,mi)=>{
+      th.addEventListener("click",()=>{
+        div.querySelectorAll(".m-thumb").forEach(t=>t.classList.remove("active"));
+        th.classList.add("active");
+        const m=p.media[mi];
+        heroEl.innerHTML=projMediaHtml(m,pi);
+        capEl.textContent=m.caption||"";
+        infoEl.classList.toggle("hidden", mi!==0);
+      });
+    });
+    el.appendChild(div);
+  });
+}
+
 function renderRolePills(role){
   if(!role) return "";
   return role.split("·").map(s=>s.trim()).filter(Boolean).map(label=>{
@@ -801,6 +1067,7 @@ async function loadProjects(){
         if(j.length) PROJECTS=j;
       } else {
         if(j.projects && j.projects.length) PROJECTS=j.projects;
+        if(j.about){ Object.assign(ABOUT, j.about); applyFont(ABOUT.font); }
         if(j.disciplines) DISCIPLINES=j.disciplines.map(d=>{
           const c=COLORS.find(x=>x.id===d.color)||{hex:d.hex||"#8a8880",dim:d.dim||"#3a3a3e"};
           return {label:d.label, hex:d.hex||c.hex, dim:d.dim||c.dim};
@@ -811,6 +1078,7 @@ async function loadProjects(){
   rail.innerHTML='<div class="rail-head">Reel / Index</div>';
   buildRail();
   selectProject(0);
+  buildMobileProjects();
 }
 loadProjects();
 </script>

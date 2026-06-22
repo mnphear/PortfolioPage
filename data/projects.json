@@ -1,4 +1,14 @@
 {
+  "about": {
+    "name": "Martin Fir",
+    "bio": "I am a 3D Generalist and Technical Artist based in Slovenia, working across film, games, and interactive media. I specialize in real-time graphics, VFX, procedural workflows, and custom tool development. I use Blender, Houdini, Nuke, Unity, Unreal Engine, Substance 3D, Photoshop, and Python to create assets, tools, and visual systems that bridge artistic vision with technical execution.",
+    "location": "Ljubljana",
+    "photo": "img/martinfir.jpg",
+    "email": "hello@martinfir.com",
+    "instagram": "@_martinfir",
+    "imdb": "",
+    "font": "russo-space"
+  },
   "disciplines": [
     {
       "label": "vfx",
@@ -41,7 +51,7 @@
         {
           "type": "image",
           "cat": "stills",
-          "caption": "",
+          "caption": "Worked on the Joker Out music video as a principle designer and vfx artist, keying, compositing, modeling and working on developing the look of the 3D scenes.",
           "src": "img/jokerout05-comped.png"
         },
         {
@@ -65,7 +75,7 @@
     {
       "code": "002",
       "title": "Big Bang",
-      "role": "vfx · animation · greenscreen · Look development",
+      "role": "vfx · animation · Look development",
       "year": "2024",
       "media": [
         {
@@ -73,14 +83,14 @@
           "cat": "stills",
           "caption": "",
           "src": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4",
-          "poster": ""
+          "poster": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4"
         }
       ]
     },
     {
       "code": "003",
       "title": "Broken Lock",
-      "role": "animation · vfx · greenscreen · Look development · Music video",
+      "role": "animation · vfx · Look development · Music video",
       "year": "2024",
       "media": [
         {
@@ -118,6 +128,13 @@
           "poster": ""
         }
       ]
+    },
+    {
+      "code": "005",
+      "title": "New Project",
+      "role": "",
+      "year": "2026",
+      "media": []
     }
   ]
 }
