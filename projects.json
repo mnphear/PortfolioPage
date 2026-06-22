@@ -1,36 +1,32 @@
 [
   {
     "code": "001",
-    "title": "Joker Out",
-    "role": "Odsevi Sonca · Comp · Set Ext · DI",
-    "year": "2025",
-    "media": [
-      { "type": "image", "cat": "stills", "src": "img/jokerout-dollhouse.webp", "caption": "Dollhouse — final comp" },
-      { "type": "image", "cat": "stills", "src": "img/jokerout-livingroom.webp", "caption": "Living room — final comp" },
-      { "type": "video", "cat": "breakdown", "src": "video/jokerout-breakdown.mp4", "poster": "video/jokerout-breakdown-poster.webp", "caption": "Nuke comp breakdown — night version" }
-    ]
-  },
-  {
-    "code": "002",
-    "title": "Mektoub",
-    "role": "Comp · Keying · Screen Replace",
+    "title": "Joker Out ",
+    "role": "",
     "year": "2026",
     "media": [
-      { "type": "image", "cat": "stills", "src": "", "caption": "Final comp — ep.03" },
-      { "type": "image", "cat": "stills", "src": "", "caption": "Final comp — ep.05" },
-      { "type": "compare", "cat": "breakdown", "before": "", "after": "", "labelBefore": "GREENSCREEN", "labelAfter": "FINAL", "caption": "Key + screen replacement" },
-      { "type": "image", "cat": "bts", "src": "", "caption": "Green screen plate" }
-    ]
-  },
-  {
-    "code": "003",
-    "title": "Wine Cellar",
-    "role": "Real-time · URP · iOS",
-    "year": "2026",
-    "media": [
-      { "type": "image", "cat": "stills", "src": "", "caption": "Cellar overview" },
-      { "type": "image", "cat": "breakdown", "src": "", "caption": "Texture streaming" },
-      { "type": "image", "cat": "bts", "src": "", "caption": "Bottle locator system" }
+      {
+        "type": "video",
+        "cat": "stills",
+        "caption": "",
+        "src": "video/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264.mp4",
+        "poster": ""
+      },
+      {
+        "type": "compare",
+        "cat": "stills",
+        "caption": "",
+        "before": "img/jokerout01-comped-1.png",
+        "after": "img/jokerout01-green.png",
+        "labelBefore": "BEFORE",
+        "labelAfter": "AFTER"
+      },
+      {
+        "type": "image",
+        "cat": "stills",
+        "caption": "",
+        "src": "img/jokerout05-comped.png"
+      }
     ]
   }
 ]
