@@ -7,7 +7,20 @@
     "email": "hello@martinfir.com",
     "instagram": "@_martinfir",
     "imdb": "",
-    "font": "russo-space"
+    "font": "russo-space",
+    "software": [
+      "Nuke",
+      "Blender",
+      "Substance3D",
+      "DavinciResolve",
+      "After Effects",
+      "Cavalry"
+    ],
+    "companies": [
+      "Aerodrom.io",
+      "Bright Visuals"
+    ],
+    "accent": "#ffbd2e"
   },
   "disciplines": [
     {
@@ -51,7 +64,7 @@
         {
           "type": "image",
           "cat": "stills",
-          "caption": "Worked on the Joker Out music video as a principle designer and vfx artist, keying, compositing, modeling and working on developing the look of the 3D scenes.",
+          "caption": "",
           "src": "img/jokerout05-comped.png"
         },
         {
@@ -70,7 +83,8 @@
           "labelBefore": "BEFORE",
           "labelAfter": "AFTER"
         }
-      ]
+      ],
+      "description": "Worked on the Joker Out music video as a principle designer and vfx artist, keying, compositing, modeling and working on developing the look of the 3D scenes."
     },
     {
       "code": "002",
