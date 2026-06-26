@@ -35,6 +35,7 @@
     --bg:#0a0a0b; --panel:#121214; --panel2:#0e0e10; --line:#232327;
     --ink:#e9e7e1; --ink-dim:#8a8880; --ink-faint:#55534d;
     --safe:#34b3bd; --safe-dim:#1d6a70; --bad:#d2503a; --radius:3px;
+    --tracking-d: -.02em;
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
   body{
@@ -72,6 +73,16 @@
   .wrap{ display:grid; grid-template-columns:240px 1fr 460px; gap:1px; background:var(--line); min-height:calc(100vh - 49px); }
   .col{ background:var(--bg); padding:1rem; overflow-y:auto; }
   .col h2{ font-size:.6rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:.8rem; font-family:"IBM Plex Mono",monospace; font-weight:600; }
+  /* editor tabs */
+  .ed-tabs{ display:flex; gap:0; border-bottom:1px solid var(--line); margin:-1rem -1rem .9rem; }
+  .ed-tab{
+    font:inherit; font-size:.55rem; letter-spacing:.22em; text-transform:uppercase;
+    background:none; border:none; border-bottom:2px solid transparent;
+    color:var(--ink-faint); padding:.55rem 1rem; cursor:pointer;
+    transition:color .15s, border-color .15s;
+  }
+  .ed-tab:hover{ color:var(--ink); }
+  .ed-tab.active{ color:var(--safe); border-bottom-color:var(--safe); }
 
   /* project list */
   .plist{ display:flex; flex-direction:column; gap:.35rem; }
@@ -126,7 +137,7 @@
   /* preview viewer (mirrors the site) */
   .pv{ position:sticky; top:1rem; }
   .pv .vhead{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:.6rem; }
-  .pv .vtitle{ font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.6rem; text-transform:uppercase; line-height:.95; }
+  .pv .vtitle{ font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.6rem; text-transform:uppercase; line-height:.95; letter-spacing:var(--tracking-d); }
   .pv .vsub{ font-size:.55rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-dim); margin-top:.25rem; }
   .pv .vyear{ font-size:.55rem; letter-spacing:.18em; color:var(--ink-faint); }
   .pv .vmain{ position:relative; aspect-ratio:16/9; background:#000; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
@@ -265,7 +276,27 @@ const FONTS = [
     url:"https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Roboto+Mono:wght@400;500&display=swap" },
   { id:"russo-space",  label:"Russo One + Space Mono",
     url:"https://fonts.googleapis.com/css2?family=Russo+One&family=Space+Mono:wght@400;700&display=swap" },
-  { id:"akira-space",  label:"Akira Expanded + Space Mono", url:null },
+  { id:"akira-space",    label:"Akira Expanded + Space Mono", url:null },
+  { id:"dela-plex",        label:"Dela Gothic One + IBM Plex",
+    url:"https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"bodoni-plex",      label:"Bodoni Moda + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6,900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"libre-bodoni-plex",label:"Libre Bodoni + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Libre+Bodoni:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"anton-plex",       label:"Anton + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"epilogue-plex",    label:"Epilogue Black + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Epilogue:wght@800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"alfaslab-plex",    label:"Alfa Slab One + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"lilita-plex",      label:"Lilita One + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Lilita+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"montserrat-plex",  label:"Montserrat + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"raleway-plex",     label:"Raleway + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"exo2-plex",        label:"Exo 2 + IBM Plex Mono",
+    url:"https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
 ];
 
 const COLORS = [
@@ -282,10 +313,11 @@ const COLORS = [
 let data = [];
 let sel = 0;
 let pvCat = "stills", pvIdx = 0;
+let edTab = "project"; // "about" | "project"
 const blobUrls = {};                 // path -> objectURL for local preview
 let fileHandle = null;               // FileSystemFileHandle for direct save
 let disciplines = [];                // [{label, color}] — global tag palette
-let about = {name:"Martin Fir",bio:"",location:"Ljubljana",photo:"",email:"hello@martinfir.com",instagram:"",imdb:"",font:"default"};
+let about = {name:"Martin Fir",bio:"",location:"Ljubljana",photo:"",email:"hello@martinfir.com",instagram:"",imdb:"",font:"default",tracking:-.02};
 
 const $ = s => document.querySelector(s);
 const statusEl = $("#status");
@@ -359,6 +391,7 @@ async function init(){
   const gf=document.getElementById("gfonts");
   if(initFont.url){ gf.href=initFont.url; gf.disabled=false; } else { gf.disabled=true; }
   if(about.accent) applyAccentCMS(about.accent);
+  if(about.tracking!=null) document.documentElement.style.setProperty("--tracking-d", about.tracking+"em");
   renderAll();
   restoreHandle();
 }
@@ -434,6 +467,11 @@ function renderAboutHtml(){
             ${FONTS.map(f=>`<option value="${f.id}"${f.id===about.font?" selected":""}>${f.label}</option>`).join("")}
           </select>
         </div>
+        <div class="field"><label>Tracking <span id="ab_tracking_val" style="color:var(--safe)">${Number((about.tracking??-.02).toFixed(3))}em</span></label>
+          <input type="range" id="ab_tracking" min="-5" max="12" step="0.5"
+            value="${((about.tracking??-.02)*100).toFixed(1)}"
+            style="width:100%;accent-color:var(--safe);cursor:pointer">
+        </div>
       </div>
       <div class="field"><label>Photo</label>
         <div class="pick">
@@ -474,6 +512,15 @@ function attachAboutHandlers(){
     const el=document.getElementById(id); if(!el) return;
     el.oninput=()=>{ about[key]=el.value; save(); };
   });
+  const trackingInp=document.getElementById("ab_tracking");
+  if(trackingInp) trackingInp.oninput=()=>{
+    const v=parseFloat(trackingInp.value)/100;
+    about.tracking=v;
+    const lbl=document.getElementById("ab_tracking_val");
+    if(lbl) lbl.textContent=Number(v.toFixed(3))+"em";
+    document.documentElement.style.setProperty("--tracking-d", v+"em");
+    save();
+  };
   const accentInp=document.getElementById("ab_accent");
   if(accentInp) accentInp.oninput=()=>{
     about.accent=accentInp.value;
@@ -604,15 +651,27 @@ function renderProjects(){
 
 function renderEditor(){
   const el = $("#editor");
-  const aboutHtml = renderAboutHtml();
-  const discHtml = renderDiscHtml();
-  if(!data.length || !data[sel]){
-    el.innerHTML = aboutHtml + discHtml + '<h2>Editor</h2><div class="empty">Select or add a project.</div>';
+  const tabsHtml = `<div class="ed-tabs">
+    <button class="ed-tab${edTab==="about"?" active":""}" data-etab="about">About</button>
+    <button class="ed-tab${edTab==="project"?" active":""}" data-etab="project">Project</button>
+  </div>`;
+
+  if(edTab==="about"){
+    el.innerHTML = tabsHtml + renderAboutHtml() + renderDiscHtml();
+    el.querySelectorAll(".ed-tab").forEach(b=>b.onclick=()=>{ edTab=b.dataset.etab; renderEditor(); });
     attachAboutHandlers(); attachDiscHandlers(); return;
+  }
+
+  const aboutHtml = "";
+  const discHtml = "";
+  if(!data.length || !data[sel]){
+    el.innerHTML = tabsHtml + '<h2>Editor</h2><div class="empty">Select or add a project.</div>';
+    el.querySelectorAll(".ed-tab").forEach(b=>b.onclick=()=>{ edTab=b.dataset.etab; renderEditor(); });
+    return;
   }
   const p = data[sel];
   function rolePills(){ return rolePillsOf(p); }
-  el.innerHTML = aboutHtml + discHtml + `
+  el.innerHTML = tabsHtml + `
     <h2>Edit project ${String(sel+1).padStart(2,"0")}</h2>
     <div class="row">
       <div class="field"><label>Code</label><input type="text" id="f_code" value="${esc(p.code)}"></div>
@@ -647,7 +706,7 @@ function renderEditor(){
   $("#delProj").onclick = ()=>{ if(confirm("Delete this project?")){ data.splice(sel,1); sel=Math.max(0,sel-1); renderAll(); } };
   $("#addMedia").onclick = ()=>{ (p.media=p.media||[]).push(newMedia("image")); renderAll(); };
   renderMedias(p);
-  attachAboutHandlers(); attachDiscHandlers();
+  el.querySelectorAll(".ed-tab").forEach(b=>b.onclick=()=>{ edTab=b.dataset.etab; renderEditor(); });
 
   // role picker: click a chip to toggle, type + Enter to add new discipline
   const roleWrap=$("#f_role_wrap"), roleInp=$("#f_role_inp");

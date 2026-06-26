@@ -68,6 +68,7 @@
     --radius:    3px;
     --font-d:    "Big Shoulders Display";
     --font-m:    "IBM Plex Mono", ui-monospace, monospace;
+    --tracking-d: -.02em;
   }
 
   @font-face{
@@ -89,7 +90,7 @@
     -webkit-font-smoothing:antialiased;
   }
 
-  /* ---- darkroom chrome: grain / scanlines / vignette ------------------ */
+  /* ---- darkroom chrome: grain / scanlines / vignette / bloom / barrel -- */
   .fx{ position:fixed; inset:0; pointer-events:none; z-index:90; }
   .fx-scan{
     background:repeating-linear-gradient(
@@ -103,6 +104,20 @@
     animation:grain .6s steps(2) infinite;
   }
   @keyframes grain{ 0%{transform:translate(0,0)} 50%{transform:translate(-4px,3px)} 100%{transform:translate(3px,-2px)} }
+  /* bloom — safelight radial glow through screen centre */
+  .fx-bloom{
+    background:radial-gradient(ellipse 60% 50% at 50% 50%,
+      rgba(52,179,189,.06) 0%, transparent 70%);
+    mix-blend-mode:screen;
+  }
+  /* accent element glows */
+  .brand h1 .lit{
+    text-shadow:0 0 22px rgba(52,179,189,.55), 0 0 60px rgba(52,179,189,.2);
+  }
+  .tc .dot{ box-shadow:0 0 7px 2px rgba(52,179,189,.6); }
+  .tab.active{ box-shadow:0 0 10px rgba(52,179,189,.2); }
+  /* CRT barrel — applied in JS once displacement map is generated */
+  .app{ will-change:filter; }
 
   /* ---- app shell ------------------------------------------------------ */
   .app{
@@ -120,7 +135,7 @@
   .brand{ display:flex; align-items:baseline; gap:1.8rem; }
   .brand h1{
     font-family:var(--font-d), sans-serif;
-    font-weight:800; letter-spacing:.06em;
+    font-weight:800; letter-spacing:var(--tracking-d);
     font-size:1.5rem; line-height:1; text-transform:uppercase;
     cursor:pointer; transition:opacity .15s;
   }
@@ -193,7 +208,7 @@
   .c-title{
     font-family:var(--font-d), sans-serif;
     font-weight:700; font-size:.92rem; line-height:1;
-    text-transform:uppercase; letter-spacing:.02em;
+    text-transform:uppercase; letter-spacing:var(--tracking-d);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .c-meta{
@@ -214,7 +229,7 @@
   .v-title{
     font-family:var(--font-d), sans-serif;
     font-weight:800; font-size:2.1rem; line-height:.95;
-    text-transform:uppercase; letter-spacing:.01em;
+    text-transform:uppercase; letter-spacing:var(--tracking-d);
   }
   .v-sub{
     font-size:.62rem; letter-spacing:.2em; text-transform:uppercase;
@@ -373,7 +388,7 @@
   .m-proj-title{
     font-family:var(--font-d),sans-serif;
     font-weight:800; font-size:1rem; line-height:.95;
-    text-transform:uppercase; letter-spacing:.01em;
+    text-transform:uppercase; letter-spacing:var(--tracking-d);
   }
   .m-proj-sub{
     display:flex; flex-wrap:wrap; gap:.2rem;
@@ -494,7 +509,7 @@
   .about-name{
     font-family:var(--font-d), sans-serif;
     font-weight:800; font-size:1.45rem; text-transform:uppercase;
-    letter-spacing:.01em; line-height:.95;
+    letter-spacing:var(--tracking-d); line-height:.95;
   }
   .about-location{
     font-size:.52rem; letter-spacing:.22em; text-transform:uppercase;
@@ -614,7 +629,7 @@
   .proj-info-title{
     font-family:var(--font-d),sans-serif;
     font-weight:800; font-size:2rem; line-height:.95;
-    text-transform:uppercase; letter-spacing:.01em;
+    text-transform:uppercase; letter-spacing:var(--tracking-d);
   }
   .proj-info-sub{
     display:flex; flex-wrap:wrap; gap:.22rem;
@@ -667,21 +682,57 @@
 
 <div class="fx fx-grain"></div>
 <div class="fx fx-vig"></div>
+<div class="fx fx-bloom"></div>
 
-<div id="preloader" aria-hidden="true">
-  <svg id="pre-sigil" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+<!-- SVG filter for CRT barrel distortion — map src injected by JS -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="crt-barrel" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
+      <feImage id="crt-map" result="map" preserveAspectRatio="xMidYMid slice"/>
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="35" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div id="preloader" hidden aria-hidden="true">
+  <svg id="pre-sigil" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg"
        fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-    <circle class="pre-outer" cx="100" cy="100" r="88" stroke-width="1.5"/>
-    <circle class="pre-inner" cx="100" cy="100" r="52" stroke-width=".8"/>
-    <circle class="pre-dot"   cx="100" cy="100" r="4" fill="currentColor" stroke="none"/>
-    <polygon class="pre-tri-up" points="100,12 176,144 24,144" stroke-width="1.2"/>
-    <polygon class="pre-tri-dn" points="100,188 176,56 24,56" stroke-width=".7"/>
-    <line class="pre-h"    x1="12"  y1="100" x2="188" y2="100" stroke-width=".5"/>
-    <line class="pre-v"    x1="100" y1="12"  x2="100" y2="188" stroke-width=".5"/>
-    <line class="pre-tick" x1="100" y1="11"  x2="100" y2="21"  stroke-width="2.5"/>
-    <line class="pre-tick" x1="189" y1="100" x2="179" y2="100" stroke-width="2.5"/>
-    <line class="pre-tick" x1="100" y1="189" x2="100" y2="179" stroke-width="2.5"/>
-    <line class="pre-tick" x1="11"  y1="100" x2="21"  y2="100" stroke-width="2.5"/>
+    <!-- bounding circle -->
+    <circle class="pre-circle"   cx="100" cy="105" r="95"  stroke-width="1.2"/>
+    <!-- compass ticks: E W NE SE SW NW (N/S are the spine) -->
+    <line class="pre-tick" x1="195" y1="105" x2="187" y2="105" stroke-width="1.5"/>
+    <line class="pre-tick" x1="5"   y1="105" x2="13"  y2="105" stroke-width="1.5"/>
+    <line class="pre-tick" x1="167" y1="38"  x2="162" y2="43"  stroke-width="1.5"/>
+    <line class="pre-tick" x1="167" y1="172" x2="162" y2="167" stroke-width="1.5"/>
+    <line class="pre-tick" x1="33"  y1="172" x2="38"  y2="167" stroke-width="1.5"/>
+    <line class="pre-tick" x1="33"  y1="38"  x2="38"  y2="43"  stroke-width="1.5"/>
+    <!-- spine — axis of the circle -->
+    <line class="pre-spine"    x1="100" y1="10"  x2="100" y2="200" stroke-width="1.5"/>
+    <!-- eye at apex: upper arc (R) -->
+    <path class="pre-arc-up"   d="M 76,33 A 27,27 0 0,1 124,33"   stroke-width="1.2"/>
+    <!-- eye at apex: lower arc (closes the lens) -->
+    <path class="pre-arc-lo"   d="M 76,33 A 27,27 0 0,0 124,33"   stroke-width="1"/>
+    <!-- chevron (M) -->
+    <path class="pre-chevron"  d="M 48,70 L 100,22 L 152,70"       stroke-width="1.5"/>
+    <!-- wide crossbar (T) -->
+    <line class="pre-crossbar" x1="24"  y1="70"  x2="176" y2="70" stroke-width="1.2"/>
+    <!-- diagonal arms (N) -->
+    <line class="pre-arm-l"    x1="24"  y1="70"  x2="60"  y2="118" stroke-width="1"/>
+    <line class="pre-arm-r"    x1="176" y1="70"  x2="140" y2="118" stroke-width="1"/>
+    <!-- diamond lozenge at centre (planetary seal marker) -->
+    <path class="pre-diamond"  d="M 100,111 L 107,118 L 100,125 L 93,118 Z" stroke-width=".9"/>
+    <!-- mid crossbar (F) -->
+    <line class="pre-mid"      x1="60"  y1="118" x2="140" y2="118" stroke-width="1"/>
+    <!-- lower convergence (A) -->
+    <line class="pre-tail-l"   x1="60"  y1="118" x2="100" y2="188" stroke-width="1"/>
+    <line class="pre-tail-r"   x1="140" y1="118" x2="100" y2="188" stroke-width="1"/>
+    <!-- nodes -->
+    <circle class="pre-dot" cx="100" cy="22"  r="3.5" fill="currentColor" stroke="none"/>
+    <circle class="pre-dot" cx="100" cy="70"  r="2.5" fill="currentColor" stroke="none"/>
+    <circle class="pre-dot" cx="100" cy="118" r="2.5" fill="currentColor" stroke="none"/>
+    <circle class="pre-dot" cx="100" cy="188" r="3"   fill="currentColor" stroke="none"/>
+    <circle class="pre-dot" cx="24"  cy="70"  r="2"   fill="currentColor" stroke="none"/>
+    <circle class="pre-dot" cx="176" cy="70"  r="2"   fill="currentColor" stroke="none"/>
   </svg>
   <div id="pre-name">Martin Fir</div>
 </div>
@@ -732,21 +783,34 @@
       </div>
     </section>
 
-    <!-- occult watermark -->
-    <svg class="bg-sigil" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+    <!-- custom sigil — derived from MARTIN FIR letter strokes -->
+    <svg class="bg-sigil" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg"
          fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
          aria-hidden="true">
-      <circle cx="100" cy="100" r="88" stroke-width="1.5"/>
-      <circle cx="100" cy="100" r="52" stroke-width=".8"/>
-      <circle cx="100" cy="100" r="4" fill="currentColor" stroke="none"/>
-      <polygon points="100,12 176,144 24,144" stroke-width="1.2"/>
-      <polygon points="100,188 176,56 24,56" stroke-width=".7"/>
-      <line x1="12" y1="100" x2="188" y2="100" stroke-width=".5"/>
-      <line x1="100" y1="12" x2="100" y2="188" stroke-width=".5"/>
-      <line x1="100" y1="11" x2="100" y2="21" stroke-width="2.5"/>
-      <line x1="189" y1="100" x2="179" y2="100" stroke-width="2.5"/>
-      <line x1="100" y1="189" x2="100" y2="179" stroke-width="2.5"/>
-      <line x1="11" y1="100" x2="21" y2="100" stroke-width="2.5"/>
+      <circle cx="100" cy="105" r="95"  stroke-width="1.2"/>
+      <line x1="195" y1="105" x2="187" y2="105" stroke-width="1.5"/>
+      <line x1="5"   y1="105" x2="13"  y2="105" stroke-width="1.5"/>
+      <line x1="167" y1="38"  x2="162" y2="43"  stroke-width="1.5"/>
+      <line x1="167" y1="172" x2="162" y2="167" stroke-width="1.5"/>
+      <line x1="33"  y1="172" x2="38"  y2="167" stroke-width="1.5"/>
+      <line x1="33"  y1="38"  x2="38"  y2="43"  stroke-width="1.5"/>
+      <line x1="100" y1="10"  x2="100" y2="200" stroke-width="1.5"/>
+      <path d="M 76,33 A 27,27 0 0,1 124,33" stroke-width="1.2"/>
+      <path d="M 76,33 A 27,27 0 0,0 124,33" stroke-width="1"/>
+      <path d="M 48,70 L 100,22 L 152,70" stroke-width="1.5"/>
+      <line x1="24"  y1="70"  x2="176" y2="70"  stroke-width="1.2"/>
+      <line x1="24"  y1="70"  x2="60"  y2="118" stroke-width="1"/>
+      <line x1="176" y1="70"  x2="140" y2="118" stroke-width="1"/>
+      <path d="M 100,111 L 107,118 L 100,125 L 93,118 Z" stroke-width=".9"/>
+      <line x1="60"  y1="118" x2="140" y2="118" stroke-width="1"/>
+      <line x1="60"  y1="118" x2="100" y2="188" stroke-width="1"/>
+      <line x1="140" y1="118" x2="100" y2="188" stroke-width="1"/>
+      <circle cx="100" cy="22"  r="3.5" fill="currentColor" stroke="none"/>
+      <circle cx="100" cy="70"  r="2.5" fill="currentColor" stroke="none"/>
+      <circle cx="100" cy="118" r="2.5" fill="currentColor" stroke="none"/>
+      <circle cx="100" cy="188" r="3"   fill="currentColor" stroke="none"/>
+      <circle cx="24"  cy="70"  r="2"   fill="currentColor" stroke="none"/>
+      <circle cx="176" cy="70"  r="2"   fill="currentColor" stroke="none"/>
     </svg>
 
     <!-- MOBILE: flat project list (hidden on desktop via CSS) -->
@@ -894,6 +958,26 @@ const FONTS = [
     url:"https://fonts.googleapis.com/css2?family=Russo+One&family=Space+Mono:wght@400;700&display=swap" },
   { id:"akira-space",  label:"Akira Expanded + Space Mono",    display:'"Akira Expanded"',         mono:'"Space Mono",ui-monospace,monospace',
     url:null },
+  { id:"dela-plex",        label:"Dela Gothic One + IBM Plex",      display:'"Dela Gothic One"',        mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"bodoni-plex",      label:"Bodoni Moda + IBM Plex Mono",     display:'"Bodoni Moda"',            mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6,900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"libre-bodoni-plex",label:"Libre Bodoni + IBM Plex Mono",    display:'"Libre Bodoni"',           mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Libre+Bodoni:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"anton-plex",       label:"Anton + IBM Plex Mono",           display:'"Anton"',                  mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"epilogue-plex",    label:"Epilogue Black + IBM Plex Mono",  display:'"Epilogue"',               mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Epilogue:wght@800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"alfaslab-plex",    label:"Alfa Slab One + IBM Plex Mono",  display:'"Alfa Slab One"',          mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"lilita-plex",      label:"Lilita One + IBM Plex Mono",     display:'"Lilita One"',             mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Lilita+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"montserrat-plex",  label:"Montserrat + IBM Plex Mono",     display:'"Montserrat"',             mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"raleway-plex",     label:"Raleway + IBM Plex Mono",        display:'"Raleway"',                mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Raleway:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
+  { id:"exo2-plex",        label:"Exo 2 + IBM Plex Mono",          display:'"Exo 2"',                  mono:'"IBM Plex Mono",ui-monospace,monospace',
+    url:"https://fonts.googleapis.com/css2?family=Exo+2:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
 ];
 
 function darkenHex(hex, f){
@@ -904,6 +988,10 @@ function applyAccent(hex){
   if(!hex) return;
   document.documentElement.style.setProperty("--safe", hex);
   document.documentElement.style.setProperty("--safe-dim", darkenHex(hex, .45));
+}
+
+function applyTracking(val){
+  document.documentElement.style.setProperty("--tracking-d", (val ?? -.02)+"em");
 }
 
 function applyFont(id){
@@ -1425,7 +1513,7 @@ async function loadProjects(){
         if(j.length) PROJECTS=j;
       } else {
         if(j.projects && j.projects.length) PROJECTS=j.projects;
-        if(j.about){ Object.assign(ABOUT, j.about); applyFont(ABOUT.font); applyAccent(ABOUT.accent); }
+        if(j.about){ Object.assign(ABOUT, j.about); applyFont(ABOUT.font); applyAccent(ABOUT.accent); applyTracking(ABOUT.tracking); }
         if(j.disciplines) DISCIPLINES=j.disciplines.map(d=>{
           const c=COLORS.find(x=>x.id===d.color)||{hex:d.hex||"#8a8880",dim:d.dim||"#3a3a3e"};
           return {label:d.label, hex:d.hex||c.hex, dim:d.dim||c.dim};
@@ -1438,50 +1526,72 @@ async function loadProjects(){
   selectProject(0);
   buildMobileProjects();
 }
+/* ---- CRT barrel distortion ---- */
+function initCRTBarrel(){
+  const s=256, c=document.createElement("canvas"); c.width=c.height=s;
+  const ctx=c.getContext("2d"), img=ctx.createImageData(s,s);
+  const k=0.40; // distortion strength
+  for(let y=0;y<s;y++) for(let x=0;x<s;x++){
+    const nx=(x/(s-1))*2-1, ny=(y/(s-1))*2-1;
+    const r2=nx*nx+ny*ny;
+    const i=(y*s+x)*4;
+    img.data[i]  =Math.max(0,Math.min(255,Math.round((0.5+k*nx*r2*0.5)*255)));
+    img.data[i+1]=Math.max(0,Math.min(255,Math.round((0.5+k*ny*r2*0.5)*255)));
+    img.data[i+2]=128; img.data[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  const el=document.getElementById("crt-map");
+  if(el){ el.setAttribute("href",c.toDataURL()); document.querySelector(".app").style.filter="url(#crt-barrel)"; }
+}
+initCRTBarrel();
+
 /* ---- preloader ---- */
 function initPreloader(){
-  if(sessionStorage.getItem("pl")) return;
-  sessionStorage.setItem("pl","1");
+  if(sessionStorage.getItem("pl3")) return;
+  sessionStorage.setItem("pl3","1");
   const ov=document.getElementById("preloader"); if(!ov) return;
   ov.removeAttribute("hidden");
 
-  // init stroke-dash on all stroked paths
-  const stroked=ov.querySelectorAll(".pre-outer,.pre-inner,.pre-tri-up,.pre-tri-dn,.pre-h,.pre-v,.pre-tick");
+  const stroked=ov.querySelectorAll(".pre-circle,.pre-tick,.pre-spine,.pre-arc-up,.pre-arc-lo,.pre-chevron,.pre-crossbar,.pre-arm-l,.pre-arm-r,.pre-diamond,.pre-mid,.pre-tail-l,.pre-tail-r");
   stroked.forEach(el=>{ try{ const l=el.getTotalLength(); el.style.strokeDasharray=l; el.style.strokeDashoffset=l; }catch(e){} });
-  const dot=ov.querySelector(".pre-dot");
-  if(dot) dot.style.opacity="0";
+  ov.querySelectorAll(".pre-dot").forEach(el=>el.style.opacity="0");
 
-  // draw sequence: [selector, delay ms, duration ms]
+  // circle seals the space → eye forms → glyph draws → spine threads last
   [
-    [".pre-outer",  0,   500],
-    [".pre-inner",  140, 360],
-    [".pre-tri-up", 320, 560],
-    [".pre-tri-dn", 500, 420],
-    [".pre-h",      680, 280],
-    [".pre-v",      720, 280],
+    [".pre-circle",   0,    500],
+    [".pre-arc-up",   480,  340],
+    [".pre-arc-lo",   640,  260],
+    [".pre-chevron",  740,  420],
+    [".pre-crossbar", 920,  300],
+    [".pre-arm-l",    1080, 260],
+    [".pre-arm-r",    1110, 260],
+    [".pre-diamond",  1260, 200],
+    [".pre-mid",      1340, 230],
+    [".pre-tail-l",   1430, 270],
+    [".pre-tail-r",   1460, 270],
+    [".pre-spine",    1600, 420],
   ].forEach(([sel,delay,dur])=>{
     const el=ov.querySelector(sel); if(!el) return;
     setTimeout(()=>{ el.style.transition=`stroke-dashoffset ${dur}ms cubic-bezier(.4,0,.2,1)`; el.style.strokeDashoffset="0"; }, delay);
   });
 
-  // ticks burst in together
+  // compass ticks burst in after circle finishes
   setTimeout(()=>{
-    ov.querySelectorAll(".pre-tick").forEach(el=>{ el.style.transition="stroke-dashoffset 200ms cubic-bezier(.4,0,.2,1)"; el.style.strokeDashoffset="0"; });
-  }, 880);
+    ov.querySelectorAll(".pre-tick").forEach(el=>{ el.style.transition="stroke-dashoffset 180ms cubic-bezier(.4,0,.2,1)"; el.style.strokeDashoffset="0"; });
+  }, 420);
 
-  // center dot
-  setTimeout(()=>{ if(dot){ dot.style.transition="opacity .3s ease"; dot.style.opacity="1"; } }, 1050);
+  setTimeout(()=>{
+    ov.querySelectorAll(".pre-dot").forEach(el=>{ el.style.transition="opacity .25s ease"; el.style.opacity="1"; });
+  }, 1920);
 
-  // name
   const nm=document.getElementById("pre-name");
-  setTimeout(()=>{ if(nm){ nm.style.transition="opacity .55s ease"; nm.style.opacity="1"; } }, 1250);
+  setTimeout(()=>{ if(nm){ nm.style.transition="opacity .55s ease"; nm.style.opacity="1"; } }, 2020);
 
-  // fade out
   setTimeout(()=>{
     ov.style.transition="opacity .65s ease";
     ov.style.opacity="0";
     setTimeout(()=>{ ov.setAttribute("hidden",""); ov.style.opacity=""; }, 700);
-  }, 2500);
+  }, 3300);
 }
 initPreloader();
 loadProjects();
