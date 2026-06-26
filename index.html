@@ -80,13 +80,13 @@
 
   *{ box-sizing:border-box; margin:0; padding:0; }
 
-  html{ height:100%; overflow-x:hidden; }
+  html{ height:100%; overflow-x:clip; }
   body{
     background:var(--bg);
     color:var(--ink);
     font-family:var(--font-m);
     overflow-y:auto;
-    overflow-x:hidden;
+    overflow-x:clip;
     cursor:auto;
     -webkit-font-smoothing:antialiased;
   }
@@ -140,10 +140,11 @@
     min-height:100vh; min-height:100dvh;
     display:grid;
     grid-template-rows:auto 1fr;
+    padding-top:var(--nav-h,52px);
   }
 
   header{
-    position:sticky; top:0; z-index:90; overflow:visible;
+    position:fixed; top:0; left:0; right:0; z-index:90; overflow:visible;
     display:flex; align-items:baseline; justify-content:space-between;
     gap:1rem; padding:.85rem 1.4rem;
     border-bottom:1px solid var(--line);
@@ -706,14 +707,27 @@
     align-items:center; justify-content:center; gap:1.8rem;
   }
   #preloader[hidden]{ display:none; }
+  @keyframes sigilBloom{
+    0%  { filter:drop-shadow(0 0 0px var(--safe)); }
+    55% { filter:drop-shadow(0 0 18px var(--safe)) drop-shadow(0 0 40px var(--safe)); }
+    100%{ filter:drop-shadow(0 0 24px var(--safe)) drop-shadow(0 0 56px var(--safe)) drop-shadow(0 0 6px var(--safe)); }
+  }
   #pre-sigil{
     width:clamp(180px,32vmin,260px); height:clamp(180px,32vmin,260px);
     color:var(--safe);
+  }
+  #pre-sigil.blooming{
+    animation:sigilBloom 2.2s cubic-bezier(.4,0,.2,1) forwards;
   }
   #pre-name{
     font-family:var(--font-d),sans-serif; font-weight:800;
     font-size:.95rem; text-transform:uppercase; letter-spacing:.5em;
     color:var(--ink-faint); opacity:0;
+  }
+  #pre-planets{
+    font-family:var(--font-m),monospace; font-size:.72rem;
+    letter-spacing:.28em; color:var(--safe);
+    opacity:0; margin-top:-.6rem;
   }
 </style>
 </head>
@@ -765,6 +779,7 @@
     <circle class="pre-dot" cx="176" cy="70"  r="2"   fill="currentColor" stroke="none"/>
   </svg>
   <div id="pre-name">Martin Fir</div>
+  <div id="pre-planets">☿ · ♃ · ♄ · ♂ · ☽ · ☉ · ♀</div>
 </div>
 
 <div class="app">
@@ -1601,15 +1616,22 @@ function applyScanlines(v,gap){    const r=document.documentElement; r.style.set
 function applyGrain(v,size){       const r=document.documentElement; r.style.setProperty("--grain",v??1); r.style.setProperty("--grain-size",size??1); }
 updateBloomColors();
 
+function updateNavHeight(){
+  const h=document.querySelector("header").offsetHeight;
+  document.documentElement.style.setProperty("--nav-h", h+"px");
+}
+updateNavHeight();
+window.addEventListener("resize", updateNavHeight);
+
 /* ---- preloader ---- */
 function initPreloader(){
-  if(sessionStorage.getItem("pl3")) return;
-  sessionStorage.setItem("pl3","1");
   const ov=document.getElementById("preloader"); if(!ov) return;
   ov.removeAttribute("hidden");
 
   const stroked=ov.querySelectorAll(".pre-circle,.pre-tick,.pre-spine,.pre-arc-up,.pre-arc-lo,.pre-chevron,.pre-crossbar,.pre-arm-l,.pre-arm-r,.pre-diamond,.pre-mid,.pre-tail-l,.pre-tail-r");
   stroked.forEach(el=>{ try{ const l=el.getTotalLength(); el.style.strokeDasharray=l; el.style.strokeDashoffset=l; }catch(e){} });
+  const sigil=document.getElementById("pre-sigil");
+  setTimeout(()=>{ sigil.classList.add("blooming"); }, 400);
   ov.querySelectorAll(".pre-dot").forEach(el=>el.style.opacity="0");
 
   // circle seals the space → eye forms → glyph draws → spine threads last
@@ -1642,6 +1664,8 @@ function initPreloader(){
 
   const nm=document.getElementById("pre-name");
   setTimeout(()=>{ if(nm){ nm.style.transition="opacity .55s ease"; nm.style.opacity="1"; } }, 2020);
+  const pl=document.getElementById("pre-planets");
+  setTimeout(()=>{ if(pl){ pl.style.transition="opacity .7s ease"; pl.style.opacity="1"; } }, 2400);
 
   setTimeout(()=>{
     ov.style.transition="opacity .65s ease";

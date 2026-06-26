@@ -854,15 +854,39 @@ function renderMedias(p){
 }
 
 /* ---- frame picker ---- */
-function openFramePicker(m){
+async function openFramePicker(m){
   document.getElementById("fp-modal")?.remove();
-  const src=blobUrls[m.src]||m.src; if(!src){ alert("Set or pick the video file first."); return; }
+  const rawSrc=blobUrls[m.src]||m.src; if(!rawSrc){ alert("Set or pick the video file first."); return; }
+
+  // Need a blob URL — canvas.drawImage taints if src is a plain server path
+  let src=rawSrc;
+  if(!rawSrc.startsWith("blob:")&&!rawSrc.startsWith("data:")){
+    // Show loading screen while we fetch the file into a blob
+    const loading=document.createElement("div");
+    loading.id="fp-modal";
+    loading.style.cssText="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;font-family:'IBM Plex Mono',monospace";
+    loading.innerHTML=`<div style="font-size:.55rem;letter-spacing:.24em;text-transform:uppercase;color:#8a8880">Loading video for capture…</div>
+      <div id="fp-load-info" style="font-size:.5rem;color:#55534d"></div>`;
+    document.body.appendChild(loading);
+    try{
+      const r=await fetch(rawSrc);
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const blob=await r.blob();
+      document.getElementById("fp-load-info").textContent=(blob.size/1024/1024).toFixed(1)+" MB loaded";
+      src=URL.createObjectURL(blob);
+      loading.remove();
+    }catch(e){
+      loading.remove();
+      alert("Could not load video for capture.\n\nUse the Pick button to select the video file first, then open the frame picker.\n\n("+e.message+")");
+      return;
+    }
+  }
   const ov=document.createElement("div");
   ov.id="fp-modal";
   ov.style.cssText="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem;font-family:'IBM Plex Mono',monospace";
   ov.innerHTML=`
     <div style="font-size:.55rem;letter-spacing:.24em;text-transform:uppercase;color:#8a8880">Scrub to frame → Capture as poster</div>
-    <video id="fp-vid" src="${src}" style="max-width:min(860px,90vw);max-height:55vh;background:#000;display:block" preload="auto" muted playsinline></video>
+    <video id="fp-vid" style="max-width:min(860px,90vw);max-height:55vh;background:#000;display:block" preload="auto" muted playsinline></video>
     <div style="width:min(860px,90vw);display:flex;gap:.7rem;align-items:center">
       <input type="range" id="fp-scrub" min="0" max="1000" step="1" value="0"
         style="flex:1;accent-color:#34b3bd;cursor:pointer">
@@ -874,6 +898,7 @@ function openFramePicker(m){
     </div>`;
   document.body.appendChild(ov);
   const vid=document.getElementById("fp-vid");
+  vid.src=src;
   const scrub=document.getElementById("fp-scrub");
   const timeEl=document.getElementById("fp-time");
   vid.addEventListener("loadedmetadata",()=>{ scrub.max=Math.round(vid.duration*100); });

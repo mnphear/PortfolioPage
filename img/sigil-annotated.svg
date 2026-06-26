@@ -1,0 +1,110 @@
+<svg viewBox="-90 -45 430 320" xmlns="http://www.w3.org/2000/svg"
+     font-family="monospace" font-size="9.5" fill="none"
+     stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- dark background -->
+  <rect x="-90" y="-45" width="430" height="320" fill="#0a0a0b"/>
+
+  <!-- ── full sigil in dim ghost so structure reads ── -->
+  <g stroke="#2a2a2e" stroke-width="1">
+    <circle cx="100" cy="105" r="95"/>
+    <line x1="195" y1="105" x2="187" y2="105"/>
+    <line x1="5"   y1="105" x2="13"  y2="105"/>
+    <line x1="167" y1="38"  x2="162" y2="43" />
+    <line x1="167" y1="172" x2="162" y2="167"/>
+    <line x1="33"  y1="172" x2="38"  y2="167"/>
+    <line x1="33"  y1="38"  x2="38"  y2="43" />
+    <line x1="100" y1="10"  x2="100" y2="200"/>
+    <path d="M 76,33 A 27,27 0 0,1 124,33"/>
+    <path d="M 76,33 A 27,27 0 0,0 124,33"/>
+    <path d="M 48,70 L 100,22 L 152,70"/>
+    <line x1="24"  y1="70"  x2="176" y2="70" />
+    <line x1="24"  y1="70"  x2="60"  y2="118"/>
+    <line x1="176" y1="70"  x2="140" y2="118"/>
+    <path d="M 100,111 L 107,118 L 100,125 L 93,118 Z"/>
+    <line x1="60"  y1="118" x2="140" y2="118"/>
+    <line x1="60"  y1="118" x2="100" y2="188"/>
+    <line x1="140" y1="118" x2="100" y2="188"/>
+    <circle cx="100" cy="22"  r="3.5" fill="#2a2a2e" stroke="none"/>
+    <circle cx="100" cy="70"  r="2.5" fill="#2a2a2e" stroke="none"/>
+    <circle cx="100" cy="118" r="2.5" fill="#2a2a2e" stroke="none"/>
+    <circle cx="100" cy="188" r="3"   fill="#2a2a2e" stroke="none"/>
+    <circle cx="24"  cy="70"  r="2"   fill="#2a2a2e" stroke="none"/>
+    <circle cx="176" cy="70"  r="2"   fill="#2a2a2e" stroke="none"/>
+  </g>
+
+  <!-- ── M  chevron  amber ── -->
+  <g stroke="#e8a23e">
+    <path d="M 48,70 L 100,22 L 152,70" stroke-width="2.2"/>
+    <circle cx="100" cy="22" r="3.5" fill="#e8a23e" stroke="none"/>
+  </g>
+  <line x1="100" y1="22" x2="-20" y2="-18" stroke="#e8a23e" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="-78" y="-10" fill="#e8a23e" font-weight="700" font-size="11">M</text>
+  <text x="-62" y="-10" fill="#555" font-size="9.5">chevron peak</text>
+
+  <!-- ── R  upper arc  violet ── -->
+  <g stroke="#9b6ec8">
+    <path d="M 76,33 A 27,27 0 0,1 124,33" stroke-width="2.2"/>
+  </g>
+  <line x1="124" y1="33" x2="200" y2="-22" stroke="#9b6ec8" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="202" y="-14" fill="#9b6ec8" font-weight="700" font-size="11">R</text>
+  <text x="214" y="-14" fill="#555" font-size="9.5">arc (×2 shared)</text>
+
+  <!-- ── T  wide crossbar  coral ── -->
+  <g stroke="#e05a4e">
+    <line x1="24" y1="70" x2="176" y2="70" stroke-width="2.2"/>
+    <circle cx="24"  cy="70" r="2" fill="#e05a4e" stroke="none"/>
+    <circle cx="176" cy="70" r="2" fill="#e05a4e" stroke="none"/>
+  </g>
+  <line x1="24" y1="70" x2="-30" y2="70" stroke="#e05a4e" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="-78" y="74" fill="#e05a4e" font-weight="700" font-size="11">T</text>
+  <text x="-62" y="74" fill="#555" font-size="9.5">wide crossbar</text>
+
+  <!-- ── I  spine  cyan ── -->
+  <g stroke="#34b3bd">
+    <line x1="100" y1="10" x2="100" y2="200" stroke-width="2.2"/>
+  </g>
+  <line x1="100" y1="155" x2="240" y2="155" stroke="#34b3bd" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="242" y="159" fill="#34b3bd" font-weight="700" font-size="11">I</text>
+  <text x="252" y="159" fill="#555" font-size="9.5">spine (×2 shared)</text>
+
+  <!-- ── N  diagonal arms  sage ── -->
+  <g stroke="#6aaa6e">
+    <line x1="24"  y1="70" x2="60"  y2="118" stroke-width="2.2"/>
+    <line x1="176" y1="70" x2="140" y2="118" stroke-width="2.2"/>
+  </g>
+  <line x1="176" y1="70" x2="230" y2="56" stroke="#6aaa6e" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="232" y="60" fill="#6aaa6e" font-weight="700" font-size="11">N</text>
+  <text x="242" y="60" fill="#555" font-size="9.5">diagonal arms</text>
+
+  <!-- ── F  mid crossbar  pink ── -->
+  <g stroke="#c86ea8">
+    <line x1="60" y1="118" x2="140" y2="118" stroke-width="2.2"/>
+    <circle cx="100" cy="118" r="2.5" fill="#c86ea8" stroke="none"/>
+  </g>
+  <line x1="60" y1="118" x2="-30" y2="118" stroke="#c86ea8" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="-78" y="122" fill="#c86ea8" font-weight="700" font-size="11">F</text>
+  <text x="-62" y="122" fill="#555" font-size="9.5">mid crossbar</text>
+
+  <!-- ── A  lower convergence  slate ── -->
+  <g stroke="#8a9bb5">
+    <line x1="60"  y1="118" x2="100" y2="188" stroke-width="2.2"/>
+    <line x1="140" y1="118" x2="100" y2="188" stroke-width="2.2"/>
+    <circle cx="100" cy="188" r="3" fill="#8a9bb5" stroke="none"/>
+  </g>
+  <line x1="100" y1="188" x2="30" y2="245" stroke="#8a9bb5" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="-78" y="254" fill="#8a9bb5" font-weight="700" font-size="11">A</text>
+  <text x="-62" y="254" fill="#555" font-size="9.5">lower convergence</text>
+
+  <!-- ── diamond — seal marker, no letter ── -->
+  <path d="M 100,111 L 107,118 L 100,125 L 93,118 Z" stroke="#444" stroke-width=".9"/>
+  <line x1="107" y1="118" x2="240" y2="105" stroke="#444" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="242" y="109" fill="#444" font-size="9">⊕ seal node</text>
+
+  <!-- ── title ── -->
+  <text x="-78" y="-30" fill="#e9e7e1" font-size="10" font-weight="700" letter-spacing="2">MARTIN FIR — SIGIL BREAKDOWN</text>
+
+  <!-- ── legend note ── -->
+  <text x="-78" y="270" fill="#444" font-size="8.5">Repeated letters I and R share the same stroke. The circle and compass ticks are the ritual frame, not letterforms.</text>
+
+</svg>
