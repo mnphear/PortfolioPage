@@ -4,11 +4,21 @@
     "bio": "I am a 3D Generalist and Technical Artist based in Slovenia, working across film, games, and interactive media. I specialize in real-time graphics, VFX, Character design, procedural workflows, and custom tool development. I use Blender, Nuke, Unity, Unreal Engine, Substance 3D, Photoshop, and Python to create assets, tools, and visual systems that bridge artistic vision with technical execution.",
     "location": "Ljubljana",
     "photo": "img/martinfir.jpg",
-    "email": "hello@martinfir.com",
+    "email": "info@martinfir.com",
     "instagram": "@_martinfir",
     "imdb": "",
-    "font": "default",
+    "font": "russo-space",
     "tracking": -0.05,
+    "bloom": 0,
+    "bloomRadius": 0.07,
+    "barrel": 0.2,
+    "vignetteSize": 1,
+    "vignetteDark": 1,
+    "scanlines": 1,
+    "scanlineGap": 2,
+    "grain": 0.79,
+    "grainSize": 1,
+    "vignette": 1,
     "software": [
       "Nuke",
       "Blender",
@@ -67,17 +77,17 @@
       "year": "2026",
       "media": [
         {
-          "type": "image",
-          "cat": "stills",
-          "caption": "",
-          "src": "img/jokerout05-comped.png"
-        },
-        {
           "type": "video",
           "cat": "stills",
           "caption": "",
           "src": "video/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264.mp4",
           "poster": ""
+        },
+        {
+          "type": "image",
+          "cat": "stills",
+          "caption": "",
+          "src": "img/jokerout05-comped.png"
         },
         {
           "type": "compare",
@@ -113,17 +123,17 @@
       "year": "2024",
       "media": [
         {
-          "type": "image",
-          "cat": "stills",
-          "caption": "",
-          "src": "img/bl-03-1.png"
-        },
-        {
           "type": "video",
           "cat": "stills",
           "caption": "",
           "src": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264.mp4",
           "poster": ""
+        },
+        {
+          "type": "image",
+          "cat": "stills",
+          "caption": "",
+          "src": "img/bl-03-1.png"
         }
       ]
     },
@@ -134,26 +144,34 @@
       "year": "2024",
       "media": [
         {
-          "type": "image",
-          "cat": "stills",
-          "caption": "",
-          "src": "img/maxim-01.png"
-        },
-        {
           "type": "video",
           "cat": "stills",
           "caption": "",
           "src": "video/maxim-premium-mandelj-full-prores422.mp4",
           "poster": ""
+        },
+        {
+          "type": "image",
+          "cat": "stills",
+          "caption": "",
+          "src": "img/maxim-01.png"
         }
       ]
     },
     {
       "code": "005",
-      "title": "New Project",
-      "role": "",
-      "year": "2026",
-      "media": []
+      "title": "A1 - Ultranet",
+      "role": "vfx · animation · Look development",
+      "year": "2024",
+      "media": [
+        {
+          "type": "video",
+          "cat": "stills",
+          "caption": "",
+          "src": "video/a1-krovni-web.mp4",
+          "poster": ""
+        }
+      ]
     }
   ]
 }

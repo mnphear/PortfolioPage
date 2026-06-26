@@ -69,6 +69,20 @@
     --font-d:    "Big Shoulders Display";
     --font-m:    "IBM Plex Mono", ui-monospace, monospace;
     --tracking-d: -.02em;
+    --bloom:         1;    /* glow intensity   0→∞  */
+    --bloom-r:       1;    /* glow radius mult 0→∞  */
+    --barrel:        1;    /* barrel strength  0→∞  */
+    --vignette-size: 1;    /* how far vig extends   */
+    --vignette-dark: 1;    /* how dark vig is  0-1  */
+    --scanlines:     1;    /* line opacity     0→∞  */
+    --scanline-gap:  2;    /* gap px  (unitless)    */
+    --grain:         1;    /* grain opacity    0→∞  */
+    --grain-size:    1;    /* grain coarseness 0→∞  */
+    /* bloom color props — recomputed by JS to track --safe */
+    --bloom-glow-1: rgba(52,179,189,.55);
+    --bloom-glow-2: rgba(52,179,189,.20);
+    --bloom-dot:    rgba(52,179,189,.60);
+    --bloom-tab:    rgba(52,179,189,.20);
   }
 
   @font-face{
@@ -97,9 +111,24 @@
       to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.22) 2px 3px);
     mix-blend-mode:multiply; opacity:.5;
   }
-  .fx-vig{ box-shadow:inset 0 0 240px 40px rgba(0,0,0,.7); }
+  .fx-vig{
+    box-shadow:inset 0 0
+      calc(240px * var(--vignette-size))
+      calc(40px  * var(--vignette-size))
+      rgba(0,0,0,calc(.7 * var(--vignette-dark)));
+  }
+  .fx-scan{
+    mix-blend-mode:multiply;
+    opacity:calc(.5 * var(--scanlines));
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0)   0 calc(var(--scanline-gap) * 1px),
+      rgba(0,0,0,.22) calc(var(--scanline-gap) * 1px) calc((var(--scanline-gap) + 1) * 1px)
+    );
+  }
   .fx-grain{
-    opacity:.05;
+    opacity:calc(.05 * var(--grain));
+    background-size:calc(120px * var(--grain-size)) auto;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     animation:grain .6s steps(2) infinite;
   }
@@ -107,15 +136,17 @@
   /* bloom — safelight radial glow through screen centre */
   .fx-bloom{
     background:radial-gradient(ellipse 60% 50% at 50% 50%,
-      rgba(52,179,189,.06) 0%, transparent 70%);
+      var(--safe) 0%, transparent 70%);
     mix-blend-mode:screen;
+    opacity:calc(.1 * var(--bloom));
   }
-  /* accent element glows */
+  /* accent element glows — color tracked by JS, radius scaled by --bloom-r */
   .brand h1 .lit{
-    text-shadow:0 0 22px rgba(52,179,189,.55), 0 0 60px rgba(52,179,189,.2);
+    text-shadow:0 0 calc(22px * var(--bloom-r)) var(--bloom-glow-1),
+                0 0 calc(60px * var(--bloom-r)) var(--bloom-glow-2);
   }
-  .tc .dot{ box-shadow:0 0 7px 2px rgba(52,179,189,.6); }
-  .tab.active{ box-shadow:0 0 10px rgba(52,179,189,.2); }
+  .tc .dot{ box-shadow:0 0 calc(7px * var(--bloom-r)) 2px var(--bloom-dot); }
+  .tab.active{ box-shadow:0 0 calc(10px * var(--bloom-r)) var(--bloom-tab); }
   /* CRT barrel — applied in JS once displacement map is generated */
   .app{ will-change:filter; }
 
@@ -140,6 +171,12 @@
     cursor:pointer; transition:opacity .15s;
   }
   .brand h1:hover{ opacity:.75; }
+  .brand h1::after{
+    content:""; display:block; height:1px;
+    background:var(--safe); transform:scaleX(0); transform-origin:left;
+    transition:transform .22s ease; margin-top:1px;
+  }
+  .brand h1:hover::after{ transform:scaleX(1); }
   .brand h1 .lit{ color:var(--safe); }
   .brand .role{
     font-size:.62rem; letter-spacing:.32em; text-transform:uppercase;
@@ -472,15 +509,16 @@
     animation:overlayIn .2s ease forwards;
   }
   .modal-overlay[hidden]{ display:none; }
+  .modal-overlay{ overflow-y:auto; align-items:flex-start; }
   .about-card{
     position:relative; display:flex; flex-direction:column;
     background:var(--panel); border:1px solid var(--line);
     border-radius:16px;
     max-width:300px; width:100%;
-    max-height:90dvh; overflow-y:auto;
     box-shadow:0 24px 64px rgba(0,0,0,.8);
     animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
     padding:10px 10px 18px; gap:.85rem;
+    margin:auto;
   }
   .about-card.closing{
     animation:cardOut .2s cubic-bezier(.4,0,1,1) forwards;
@@ -745,7 +783,7 @@
       <span class="role">VFX · Concept · 3D Generalist · Ljubljana</span>
     </div>
     <div class="tc">
-      <a class="mail" href="mailto:hello@martinfir.com">hello@martinfir.com</a>
+      <a class="mail" id="headerMail" href="mailto:hello@martinfir.com">hello@martinfir.com</a>
     </div>
   </header>
 
@@ -988,6 +1026,7 @@ function applyAccent(hex){
   if(!hex) return;
   document.documentElement.style.setProperty("--safe", hex);
   document.documentElement.style.setProperty("--safe-dim", darkenHex(hex, .45));
+  updateBloomColors();
 }
 
 function applyTracking(val){
@@ -1443,7 +1482,7 @@ function projMediaHtml(m, pi){
   if(!m) return `<span class="plate p${pi%4}"></span>`;
   if(m.type==="image"&&m.src)      return `<img src="${m.src}" alt="" loading="lazy">`;
   if(m.type==="video"&&m.src)      return `<video src="${m.src}"${m.poster?` poster="${m.poster}"`:""} autoplay muted loop playsinline></video>`;
-  if(m.type==="compare")           return `<img src="${m.after||m.before||""}" alt="" loading="lazy">`;
+  if(m.type==="compare")           return buildProjCompare(m);
   return `<span class="plate p${pi%4}"></span>`;
 }
 
@@ -1479,14 +1518,16 @@ function buildMobileProjects(){
     const capEl=div.querySelector(".m-proj-cap");
     const infoEl=div.querySelector(".m-proj-info");
     const mediaEl=div.querySelector(".m-proj-media");
+    if(hero&&hero.type==="compare") initProjCompare(heroEl.querySelector(".cmp"));
     mediaEl.style.cursor="pointer";
-    mediaEl.addEventListener("click",()=>openProject(pi));
+    mediaEl.addEventListener("click",e=>{ if(!e.target.closest(".cmp")) openProject(pi); });
     div.querySelectorAll(".m-thumb").forEach((th,mi)=>{
       th.addEventListener("click",()=>{
         div.querySelectorAll(".m-thumb").forEach(t=>t.classList.remove("active"));
         th.classList.add("active");
         const m=p.media[mi];
         heroEl.innerHTML=projMediaHtml(m,pi);
+        if(m.type==="compare") initProjCompare(heroEl.querySelector(".cmp"));
         capEl.textContent=m.caption||"";
         infoEl.classList.toggle("hidden", mi!==0);
       });
@@ -1513,7 +1554,21 @@ async function loadProjects(){
         if(j.length) PROJECTS=j;
       } else {
         if(j.projects && j.projects.length) PROJECTS=j.projects;
-        if(j.about){ Object.assign(ABOUT, j.about); applyFont(ABOUT.font); applyAccent(ABOUT.accent); applyTracking(ABOUT.tracking); }
+        if(j.about){
+          Object.assign(ABOUT, j.about);
+          applyFont(ABOUT.font);
+          applyAccent(ABOUT.accent);
+          applyTracking(ABOUT.tracking);
+          applyBloom(ABOUT.bloom, ABOUT.bloomRadius);
+          initCRTBarrel(ABOUT.barrel);
+          applyVignette(ABOUT.vignetteSize ?? ABOUT.vignette, ABOUT.vignetteDark);
+          applyScanlines(ABOUT.scanlines, ABOUT.scanlineGap);
+          applyGrain(ABOUT.grain, ABOUT.grainSize);
+          if(ABOUT.email){
+            const ml=document.getElementById("headerMail");
+            if(ml){ ml.href="mailto:"+ABOUT.email; ml.textContent=ABOUT.email; }
+          }
+        }
         if(j.disciplines) DISCIPLINES=j.disciplines.map(d=>{
           const c=COLORS.find(x=>x.id===d.color)||{hex:d.hex||"#8a8880",dim:d.dim||"#3a3a3e"};
           return {label:d.label, hex:d.hex||c.hex, dim:d.dim||c.dim};
@@ -1526,11 +1581,38 @@ async function loadProjects(){
   selectProject(0);
   buildMobileProjects();
 }
-/* ---- CRT barrel distortion ---- */
-function initCRTBarrel(){
+/* ---- post-processing apply helpers ---- */
+function hexToRgb(hex){
+  hex=hex.trim().replace(/^#/,"");
+  if(hex.length===3) hex=hex.split("").map(c=>c+c).join("");
+  return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
+}
+function updateBloomColors(){
+  const root=document.documentElement;
+  const v=parseFloat(root.style.getPropertyValue("--bloom")||getComputedStyle(root).getPropertyValue("--bloom"))||1;
+  const hex=(root.style.getPropertyValue("--safe")||getComputedStyle(root).getPropertyValue("--safe")).trim();
+  if(!hex||hex.length<4) return;
+  const [r,g,b]=hexToRgb(hex);
+  root.style.setProperty("--bloom-glow-1",`rgba(${r},${g},${b},${(0.55*v).toFixed(3)})`);
+  root.style.setProperty("--bloom-glow-2",`rgba(${r},${g},${b},${(0.20*v).toFixed(3)})`);
+  root.style.setProperty("--bloom-dot",   `rgba(${r},${g},${b},${(0.60*v).toFixed(3)})`);
+  root.style.setProperty("--bloom-tab",   `rgba(${r},${g},${b},${(0.20*v).toFixed(3)})`);
+}
+function applyBloom(intensity, radius){
+  document.documentElement.style.setProperty("--bloom",   intensity??1);
+  document.documentElement.style.setProperty("--bloom-r", radius??1);
+  updateBloomColors();
+}
+function applyVignette(size, dark){ const r=document.documentElement; r.style.setProperty("--vignette-size",size??1); r.style.setProperty("--vignette-dark",dark??1); }
+function applyScanlines(v,gap){    const r=document.documentElement; r.style.setProperty("--scanlines",v??1); r.style.setProperty("--scanline-gap",gap??2); }
+function applyGrain(v,size){       const r=document.documentElement; r.style.setProperty("--grain",v??1); r.style.setProperty("--grain-size",size??1); }
+function initCRTBarrel(strength){
+  strength = strength??1;
+  const appEl=document.querySelector(".app");
+  if(strength<=0){ appEl.style.filter=""; return; }
+  const k=0.40*strength;
   const s=256, c=document.createElement("canvas"); c.width=c.height=s;
   const ctx=c.getContext("2d"), img=ctx.createImageData(s,s);
-  const k=0.40; // distortion strength
   for(let y=0;y<s;y++) for(let x=0;x<s;x++){
     const nx=(x/(s-1))*2-1, ny=(y/(s-1))*2-1;
     const r2=nx*nx+ny*ny;
@@ -1541,9 +1623,10 @@ function initCRTBarrel(){
   }
   ctx.putImageData(img,0,0);
   const el=document.getElementById("crt-map");
-  if(el){ el.setAttribute("href",c.toDataURL()); document.querySelector(".app").style.filter="url(#crt-barrel)"; }
+  if(el){ el.setAttribute("href",c.toDataURL()); appEl.style.filter="url(#crt-barrel)"; }
 }
-initCRTBarrel();
+initCRTBarrel(1);
+updateBloomColors();
 
 /* ---- preloader ---- */
 function initPreloader(){
