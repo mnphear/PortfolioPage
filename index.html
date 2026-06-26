@@ -349,7 +349,7 @@
     border-radius:var(--radius); overflow:hidden;
   }
   .m-proj-hero{ position:absolute; inset:0; }
-  .m-proj-hero img,.m-proj-hero video{ width:100%; height:100%; object-fit:contain; display:block; }
+  .m-proj-hero img,.m-proj-hero video{ width:100%; height:100%; object-fit:cover; display:block; }
   .m-proj-hero .plate{ position:absolute; inset:0; }
   .m-proj-cap{
     position:absolute; left:10px; top:10px;
@@ -383,6 +383,24 @@
     font-size:.58rem; letter-spacing:.2em; text-transform:uppercase;
     color:var(--ink-faint); margin-top:.25rem;
   }
+  .m-proj-seal{
+    position:absolute; top:.5rem; right:.6rem;
+    font-size:1.05rem; color:var(--safe); opacity:.6;
+    z-index:3; line-height:1; pointer-events:none;
+    text-shadow:0 0 8px var(--safe-dim);
+  }
+  @keyframes sigil-drift{
+    from{ transform:translate(-50%,-50%) rotate(0deg); }
+    to{   transform:translate(-50%,-50%) rotate(360deg); }
+  }
+  .bg-sigil{
+    position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:clamp(260px,40vmin,500px); height:clamp(260px,40vmin,500px);
+    opacity:.055; pointer-events:none; z-index:0;
+    color:var(--safe);
+    animation:sigil-drift 180s linear infinite;
+  }
   .m-proj-thumbs{
     display:flex; flex-direction:column; gap:.35rem;
     flex-shrink:0; width:58px;
@@ -403,16 +421,18 @@
   }
   @media (min-width:761px){
     .m-projects{
-      padding:2.5rem 4rem 6rem;
-      gap:7rem;
-      max-width:1100px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      column-gap:2rem; row-gap:3rem;
+      padding:2.5rem 3rem 6rem;
+      max-width:1400px;
       margin:0 auto;
     }
-    .m-proj{ gap:.75rem; }
-    .m-proj-thumbs{ width:82px; }
-    .m-thumb{ width:82px; }
-    .m-proj-title{ font-size:1.6rem; }
-    .m-proj-info{ padding:1.4rem 1.8rem; }
+    .m-proj{ gap:.6rem; }
+    .m-proj-thumbs{ width:68px; }
+    .m-thumb{ width:68px; }
+    .m-proj-title{ font-size:1.3rem; }
+    .m-proj-info{ padding:1rem 1.2rem; }
     .m-proj-sub{ margin-top:.5rem; font-size:.5rem; }
     .m-proj-year{ margin-top:.45rem; }
   }
@@ -423,12 +443,12 @@
     to{ opacity:1; }
   }
   @keyframes cardIn {
-    from{ transform:translate(-32px,-52px) scale(.72) rotate(-2deg); opacity:0; }
-    to{   transform:translate(0,0)         scale(1)   rotate(0deg);  opacity:1; }
+    from{ transform:translateY(28px) scale(.97); opacity:0; }
+    to{   transform:translateY(0)    scale(1);   opacity:1; }
   }
   @keyframes cardOut {
-    from{ transform:translate(0,0)         scale(1)   rotate(0deg);  opacity:1; }
-    to{   transform:translate(-20px,-36px) scale(.82) rotate(-1deg); opacity:0; }
+    from{ transform:translateY(0)    scale(1);   opacity:1; }
+    to{   transform:translateY(18px) scale(.97); opacity:0; }
   }
   .modal-overlay{
     position:fixed; inset:0; z-index:80;
@@ -438,59 +458,68 @@
   }
   .modal-overlay[hidden]{ display:none; }
   .about-card{
-    position:relative; display:flex; gap:1.4rem;
+    position:relative; display:flex; flex-direction:column;
     background:var(--panel); border:1px solid var(--line);
-    border-radius:var(--radius); padding:1.6rem;
-    max-width:520px; width:100%;
+    border-radius:16px;
+    max-width:300px; width:100%;
     max-height:90dvh; overflow-y:auto;
-    box-shadow:0 24px 64px rgba(0,0,0,.6);
-    animation:cardIn .42s cubic-bezier(.34,1.56,.64,1) forwards;
+    box-shadow:0 24px 64px rgba(0,0,0,.8);
+    animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
+    padding:10px 10px 18px; gap:.85rem;
   }
   .about-card.closing{
-    animation:cardOut .22s cubic-bezier(.4,0,1,1) forwards;
+    animation:cardOut .2s cubic-bezier(.4,0,1,1) forwards;
   }
   .about-card-close{
-    position:absolute; top:.5rem; right:.6rem;
-    background:none; border:none; color:var(--ink-faint); font-size:1.1rem;
-    cursor:pointer; padding:.2rem .45rem; line-height:1; transition:color .12s;
+    position:absolute; top:.55rem; right:.55rem; z-index:2;
+    background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.12); border-radius:50%;
+    color:var(--ink-dim); font-size:.8rem;
+    cursor:pointer; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    transition:color .12s, background .12s; line-height:1;
   }
-  .about-card-close:hover{ color:var(--ink); }
+  .about-card-close:hover{ color:var(--ink); background:rgba(0,0,0,.85); }
   .about-photo{
-    flex-shrink:0; width:110px; height:110px;
-    border-radius:var(--radius); overflow:hidden; position:relative;
-    background:#000; border:1px solid var(--line);
+    width:100%; aspect-ratio:4/5; flex-shrink:0;
+    border-radius:10px; overflow:hidden; position:relative; background:#111;
+    border:1px solid var(--safe);
   }
   .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .about-info{ display:flex; flex-direction:column; min-width:0; }
+  .about-photo .plate{ border-radius:10px; }
+  .about-info{
+    display:flex; flex-direction:column; gap:.65rem;
+    padding:0 .3rem;
+  }
   .about-name{
     font-family:var(--font-d), sans-serif;
-    font-weight:800; font-size:1.7rem; text-transform:uppercase;
-    letter-spacing:.01em; line-height:.95; margin-bottom:.35rem;
+    font-weight:800; font-size:1.45rem; text-transform:uppercase;
+    letter-spacing:.01em; line-height:.95;
   }
   .about-location{
-    font-size:.58rem; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--ink-faint); margin-bottom:.7rem;
+    font-size:.52rem; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-faint); margin-top:.2rem;
   }
   .about-bio{
-    font-size:.62rem; letter-spacing:.06em; color:var(--ink-dim);
-    line-height:1.65; margin-bottom:.9rem; flex:1;
+    font-size:.6rem; letter-spacing:.04em; color:var(--ink-dim);
+    line-height:1.7;
   }
-  .about-links{ display:flex; flex-wrap:wrap; gap:.35rem; }
-  .about-section{ margin-top:.85rem; }
+  .about-links{ display:flex; flex-wrap:wrap; gap:.3rem; }
+  .about-section{ display:flex; flex-direction:column; gap:.35rem; }
   .about-section-label{
-    font-size:.46rem; letter-spacing:.28em; text-transform:uppercase;
-    color:var(--ink-faint); margin-bottom:.38rem;
+    font-size:.44rem; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--ink-faint);
   }
-  .about-tags{ display:flex; flex-wrap:wrap; gap:.22rem; }
+  .about-tags{ display:flex; flex-wrap:wrap; gap:.2rem; }
   .about-tag{
-    font-size:.48rem; letter-spacing:.1em; text-transform:uppercase;
+    font-size:.46rem; letter-spacing:.1em; text-transform:uppercase;
     color:var(--ink-dim); border:1px solid var(--line);
-    border-radius:2px; padding:.1rem .38rem;
+    border-radius:2px; padding:.1rem .36rem;
   }
   .about-link{
-    font-size:.55rem; letter-spacing:.18em; text-transform:uppercase;
+    font-size:.52rem; letter-spacing:.16em; text-transform:uppercase;
     color:var(--ink-dim); border:1px solid var(--line); border-radius:var(--radius);
-    padding:.28rem .6rem; text-decoration:none; transition:color .12s, border-color .12s;
+    padding:.28rem .65rem; text-decoration:none; transition:color .12s, border-color .12s;
   }
   .about-link:hover{ color:var(--safe); border-color:var(--safe-dim); }
 
@@ -614,12 +643,48 @@
     .proj-info-col{ border-left:none; border-top:1px solid var(--line); padding:.8rem; }
     .proj-info-title{ font-size:1.3rem; }
   }
+
+  /* ---- preloader ---- */
+  #preloader{
+    position:fixed; inset:0; z-index:200;
+    background:var(--bg);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:1.8rem;
+  }
+  #preloader[hidden]{ display:none; }
+  #pre-sigil{
+    width:clamp(180px,32vmin,260px); height:clamp(180px,32vmin,260px);
+    color:var(--safe);
+  }
+  #pre-name{
+    font-family:var(--font-d),sans-serif; font-weight:800;
+    font-size:.95rem; text-transform:uppercase; letter-spacing:.5em;
+    color:var(--ink-faint); opacity:0;
+  }
 </style>
 </head>
 <body>
 
 <div class="fx fx-grain"></div>
 <div class="fx fx-vig"></div>
+
+<div id="preloader" aria-hidden="true">
+  <svg id="pre-sigil" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+       fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="pre-outer" cx="100" cy="100" r="88" stroke-width="1.5"/>
+    <circle class="pre-inner" cx="100" cy="100" r="52" stroke-width=".8"/>
+    <circle class="pre-dot"   cx="100" cy="100" r="4" fill="currentColor" stroke="none"/>
+    <polygon class="pre-tri-up" points="100,12 176,144 24,144" stroke-width="1.2"/>
+    <polygon class="pre-tri-dn" points="100,188 176,56 24,56" stroke-width=".7"/>
+    <line class="pre-h"    x1="12"  y1="100" x2="188" y2="100" stroke-width=".5"/>
+    <line class="pre-v"    x1="100" y1="12"  x2="100" y2="188" stroke-width=".5"/>
+    <line class="pre-tick" x1="100" y1="11"  x2="100" y2="21"  stroke-width="2.5"/>
+    <line class="pre-tick" x1="189" y1="100" x2="179" y2="100" stroke-width="2.5"/>
+    <line class="pre-tick" x1="100" y1="189" x2="100" y2="179" stroke-width="2.5"/>
+    <line class="pre-tick" x1="11"  y1="100" x2="21"  y2="100" stroke-width="2.5"/>
+  </svg>
+  <div id="pre-name">Martin Fir</div>
+</div>
 
 <div class="app">
 
@@ -667,6 +732,23 @@
       </div>
     </section>
 
+    <!-- occult watermark -->
+    <svg class="bg-sigil" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+         fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <circle cx="100" cy="100" r="88" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="52" stroke-width=".8"/>
+      <circle cx="100" cy="100" r="4" fill="currentColor" stroke="none"/>
+      <polygon points="100,12 176,144 24,144" stroke-width="1.2"/>
+      <polygon points="100,188 176,56 24,56" stroke-width=".7"/>
+      <line x1="12" y1="100" x2="188" y2="100" stroke-width=".5"/>
+      <line x1="100" y1="12" x2="100" y2="188" stroke-width=".5"/>
+      <line x1="100" y1="11" x2="100" y2="21" stroke-width="2.5"/>
+      <line x1="189" y1="100" x2="179" y2="100" stroke-width="2.5"/>
+      <line x1="100" y1="189" x2="100" y2="179" stroke-width="2.5"/>
+      <line x1="11" y1="100" x2="21" y2="100" stroke-width="2.5"/>
+    </svg>
+
     <!-- MOBILE: flat project list (hidden on desktop via CSS) -->
     <div class="m-projects" id="mobileProjects"></div>
 
@@ -681,8 +763,10 @@
         <span class="plate p1" id="aboutPlate"></span>
       </div>
       <div class="about-info">
-        <div class="about-name" id="aboutName">Martin Fir</div>
-        <div class="about-location" id="aboutLocation"></div>
+        <div>
+          <div class="about-name" id="aboutName">Martin Fir</div>
+          <div class="about-location" id="aboutLocation"></div>
+        </div>
         <div class="about-bio" id="aboutBio"></div>
         <div class="about-links" id="aboutLinks"></div>
         <div class="about-section" id="aboutSoftware"></div>
@@ -793,6 +877,8 @@ let PROJECTS = DEFAULT_PROJECTS;
 let DISCIPLINES = [];
 let ABOUT = { name:"Martin Fir", bio:"", location:"Ljubljana", photo:"", email:"hello@martinfir.com", instagram:"", imdb:"", font:"default", accent:"#34b3bd" };
 
+const SEALS = ["☿","♃","♄","♂","☽","☉","♀","⊕"];
+
 const FONTS = [
   { id:"default",     label:"Big Shoulders + IBM Plex Mono", display:'"Big Shoulders Display"', mono:'"IBM Plex Mono",ui-monospace,monospace',
     url:"https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
@@ -849,12 +935,6 @@ const vMain  = $("#vMain"),  vCap = $("#vCap");
 const stage3d= $("#stage3d");
 const tabsEl = $("#tabs"),   stripEl = $("#strip");
 
-/* ---- timecode ---------------------------------------------------------- */
-const tcEl = $("#tc"); let f = 0;
-setInterval(()=>{ f=(f+1)%(24*60*60*24); const h=Math.floor(f/(24*3600)),
-  m=Math.floor(f/(24*60))%60, s=Math.floor(f/24)%60, fr=f%24;
-  const p=n=>String(n).padStart(2,"0");
-  tcEl.textContent=`${p(h)}:${p(m)}:${p(s)}:${p(fr)}`; }, 1000/24);
 
 /* thumbnail source for any media type (image src / video poster / compare after) */
 function mediaThumb(m){
@@ -1136,8 +1216,12 @@ function openAbout(){
   document.getElementById("aboutLocation").textContent = a.location||"";
   document.getElementById("aboutBio").textContent = a.bio||"";
   const img=document.getElementById("aboutImg"), plate=document.getElementById("aboutPlate");
-  if(a.photo){ img.src=a.photo; img.hidden=false; plate.hidden=true; }
-  else{ img.hidden=true; plate.hidden=false; }
+  if(a.photo){
+    img.src=a.photo;
+    const c=a.photoCrop||{x:50,y:50};
+    img.style.objectPosition=`${c.x}% ${c.y}%`;
+    img.hidden=false; plate.hidden=true;
+  } else{ img.hidden=true; plate.hidden=false; }
   const links=document.getElementById("aboutLinks");
   links.innerHTML="";
   if(a.email)     links.innerHTML+=`<a class="about-link" href="mailto:${a.email}">Email</a>`;
@@ -1161,7 +1245,9 @@ function closeAbout(){
 }
 document.getElementById("aboutOverlay").addEventListener("click",e=>{ if(e.target===e.currentTarget) closeAbout(); });
 document.getElementById("aboutClose").addEventListener("click", closeAbout);
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeAbout(); });
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && !document.getElementById("aboutOverlay").hasAttribute("hidden")) closeAbout();
+});
 document.querySelector(".brand h1").addEventListener("click", openAbout);
 
 /* ---- project detail modal ---------------------------------------------- */
@@ -1287,15 +1373,17 @@ function buildMobileProjects(){
     }).join("");
     const div=document.createElement("div");
     div.className="m-proj";
+    const seal=SEALS[pi%SEALS.length];
     div.innerHTML=`
       <div class="m-proj-media">
         <div class="m-proj-hero">${projMediaHtml(hero,pi)}</div>
         <div class="m-proj-scrim"></div>
         <div class="m-proj-cap">${hero?.caption||""}</div>
+        <div class="m-proj-seal">${seal}</div>
         <div class="m-proj-info">
           <div class="m-proj-title">${p.title}</div>
           <div class="m-proj-sub">${renderRolePills(p.role)}</div>
-          <div class="m-proj-year">${p.code} / ${p.year}</div>
+          <div class="m-proj-year">${p.year}</div>
         </div>
       </div>
       ${thumbsHtml?`<div class="m-proj-thumbs">${thumbsHtml}</div>`:""}`;
@@ -1350,6 +1438,52 @@ async function loadProjects(){
   selectProject(0);
   buildMobileProjects();
 }
+/* ---- preloader ---- */
+function initPreloader(){
+  if(sessionStorage.getItem("pl")) return;
+  sessionStorage.setItem("pl","1");
+  const ov=document.getElementById("preloader"); if(!ov) return;
+  ov.removeAttribute("hidden");
+
+  // init stroke-dash on all stroked paths
+  const stroked=ov.querySelectorAll(".pre-outer,.pre-inner,.pre-tri-up,.pre-tri-dn,.pre-h,.pre-v,.pre-tick");
+  stroked.forEach(el=>{ try{ const l=el.getTotalLength(); el.style.strokeDasharray=l; el.style.strokeDashoffset=l; }catch(e){} });
+  const dot=ov.querySelector(".pre-dot");
+  if(dot) dot.style.opacity="0";
+
+  // draw sequence: [selector, delay ms, duration ms]
+  [
+    [".pre-outer",  0,   500],
+    [".pre-inner",  140, 360],
+    [".pre-tri-up", 320, 560],
+    [".pre-tri-dn", 500, 420],
+    [".pre-h",      680, 280],
+    [".pre-v",      720, 280],
+  ].forEach(([sel,delay,dur])=>{
+    const el=ov.querySelector(sel); if(!el) return;
+    setTimeout(()=>{ el.style.transition=`stroke-dashoffset ${dur}ms cubic-bezier(.4,0,.2,1)`; el.style.strokeDashoffset="0"; }, delay);
+  });
+
+  // ticks burst in together
+  setTimeout(()=>{
+    ov.querySelectorAll(".pre-tick").forEach(el=>{ el.style.transition="stroke-dashoffset 200ms cubic-bezier(.4,0,.2,1)"; el.style.strokeDashoffset="0"; });
+  }, 880);
+
+  // center dot
+  setTimeout(()=>{ if(dot){ dot.style.transition="opacity .3s ease"; dot.style.opacity="1"; } }, 1050);
+
+  // name
+  const nm=document.getElementById("pre-name");
+  setTimeout(()=>{ if(nm){ nm.style.transition="opacity .55s ease"; nm.style.opacity="1"; } }, 1250);
+
+  // fade out
+  setTimeout(()=>{
+    ov.style.transition="opacity .65s ease";
+    ov.style.opacity="0";
+    setTimeout(()=>{ ov.setAttribute("hidden",""); ov.style.opacity=""; }, 700);
+  }, 2500);
+}
+initPreloader();
 loadProjects();
 </script>
 </body>

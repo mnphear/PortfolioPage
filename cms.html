@@ -202,11 +202,17 @@
   }
   .disc-picker input:focus{ outline:none; }
 
-  .about-photo-preview{
-    width:100%; aspect-ratio:1/1; background:#000; border:1px solid var(--line);
-    border-radius:var(--radius); overflow:hidden; position:relative; margin-top:.4rem;
+  .crop-tool{ display:flex; flex-direction:column; align-items:center; gap:.35rem; margin-top:.6rem; }
+  .crop-circle{
+    width:100px; aspect-ratio:4/5; border-radius:8px;
+    overflow:hidden; position:relative; background:#111;
+    cursor:grab; touch-action:none;
+    border:1px solid var(--safe);
   }
-  .about-photo-preview img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .crop-circle:active{ cursor:grabbing; }
+  .crop-circle img{ width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+  .crop-circle .plate{ border-radius:8px; }
+  .crop-hint{ font-size:.48rem; letter-spacing:.12em; color:var(--ink-faint); text-transform:uppercase; }
 
   @media (max-width:1100px){ .wrap{ grid-template-columns:1fr; } .pv{ position:static; } }
 </style>
@@ -434,8 +440,13 @@ function renderAboutHtml(){
           <input class="path" type="text" id="ab_photo" value="${esc(about.photo)}" placeholder="img/photo.jpg">
           <label class="filebtn">Pick<input type="file" id="ab_photo_file" accept="image/*"></label>
         </div>
-        <div class="about-photo-preview" id="ab_photo_preview">
-          ${about.photo?`<img src="${resolveSrc(about.photo)}" alt="">`:`<span class="plate p1"></span>`}
+        <div class="crop-tool">
+          <div class="crop-circle" id="ab_crop_circle">
+            ${about.photo
+              ?`<img id="ab_crop_img" src="${resolveSrc(about.photo)}" style="object-position:${(about.photoCrop&&about.photoCrop.x!=null?about.photoCrop.x:50)}% ${(about.photoCrop&&about.photoCrop.y!=null?about.photoCrop.y:50)}%" draggable="false">`
+              :`<span class="plate p1"></span>`}
+          </div>
+          <div class="crop-hint">Drag to reposition</div>
         </div>
       </div>
     </div>
@@ -476,21 +487,57 @@ function attachAboutHandlers(){
   if(coInp) coInp.oninput=()=>{ about.companies=coInp.value.split(",").map(s=>s.trim()).filter(Boolean); save(); };
   const pathInp=document.getElementById("ab_photo");
   const filePick=document.getElementById("ab_photo_file");
-  if(pathInp) pathInp.oninput=()=>{ about.photo=pathInp.value; updateAboutPreview(); save(); };
+  function updateCropCircle(src, crop){
+    const circle=document.getElementById("ab_crop_circle"); if(!circle) return;
+    const cx=crop&&crop.x!=null?crop.x:50, cy=crop&&crop.y!=null?crop.y:50;
+    if(src){
+      let img=document.getElementById("ab_crop_img");
+      if(!img){ circle.innerHTML=`<img id="ab_crop_img" src="${src}" style="object-position:${cx}% ${cy}%" draggable="false">`; }
+      else{ img.src=src; img.style.objectPosition=`${cx}% ${cy}%`; }
+    } else {
+      circle.innerHTML=`<span class="plate p1"></span>`;
+    }
+  }
+  if(pathInp) pathInp.oninput=()=>{
+    about.photo=pathInp.value;
+    updateCropCircle(resolveSrc(about.photo), about.photoCrop);
+    save();
+  };
   if(filePick) filePick.onchange=()=>{
     const file=filePick.files[0]; if(!file) return;
     const path="img/"+sanitize(file.name);
     blobUrls[path]=URL.createObjectURL(file);
     about.photo=path; if(pathInp) pathInp.value=path;
-    updateAboutPreview(); save();
+    about.photoCrop={x:50,y:50};
+    updateCropCircle(blobUrls[path], about.photoCrop);
+    save();
   };
-}
-function updateAboutPreview(){
-  const el=document.getElementById("ab_photo_preview"); if(!el) return;
-  const s=resolveSrc(about.photo);
-  el.innerHTML=s?`<img src="${s}" alt="">`:`<span class="plate p1"></span>`;
-}
 
+  // drag-to-crop on the circle
+  (function setupCropDrag(){
+    const circle=document.getElementById("ab_crop_circle"); if(!circle) return;
+    let sx, sy, scx, scy;
+    circle.addEventListener("pointerdown", e=>{
+      if(!document.getElementById("ab_crop_img")) return;
+      circle.setPointerCapture(e.pointerId);
+      sx=e.clientX; sy=e.clientY;
+      scx=about.photoCrop&&about.photoCrop.x!=null?about.photoCrop.x:50;
+      scy=about.photoCrop&&about.photoCrop.y!=null?about.photoCrop.y:50;
+      e.preventDefault();
+    });
+    circle.addEventListener("pointermove", e=>{
+      if(!circle.hasPointerCapture(e.pointerId)) return;
+      const rect=circle.getBoundingClientRect();
+      const nx=Math.max(0,Math.min(100, scx-(e.clientX-sx)/rect.width*100));
+      const ny=Math.max(0,Math.min(100, scy-(e.clientY-sy)/rect.height*100));
+      about.photoCrop={x:nx, y:ny};
+      const img=document.getElementById("ab_crop_img");
+      if(img) img.style.objectPosition=`${nx}% ${ny}%`;
+      save();
+    });
+    circle.addEventListener("pointerup", e=>{ circle.releasePointerCapture(e.pointerId); });
+  })();
+}
 /* ---------- disciplines palette ---------- */
 function saveDisciplines(){ save(); }
 function colorFor(id){ return COLORS.find(c=>c.id===id)||COLORS[0]; }
@@ -671,18 +718,18 @@ function renderMedias(p){
 
 /* type-specific path + file inputs */
 function mediaFields(m,i){
-  const pickRow = (key,label,folder) => `
+  const pickRow = (key,label,folder,accept) => `
     <div class="field">
       <label>${label}</label>
       <div class="pick">
         <input class="path" type="text" data-k="${key}" value="${esc(m[key])}" placeholder="${folder}/filename">
-        <label class="filebtn">Pick<input type="file" data-target="${key}" data-folder="${folder}" accept="${folder==='video'?'video/*':folder==='models'?'.glb,.gltf':'image/*'}"></label>
+        <label class="filebtn">Pick<input type="file" data-target="${key}" data-folder="${folder}" accept="${accept||(folder==='video'?'video/*':folder==='models'?'.glb,.gltf':'image/*')}"></label>
       </div>
       <div class="hint" data-hint="${key}"></div>
     </div>`;
   if(m.type==="image")  return pickRow("src","Image file","img");
   if(m.type==="model")  return pickRow("src","Model file (GLB)","models");
-  if(m.type==="video")  return pickRow("src","Video file","video") + pickRow("poster","Poster frame","video");
+  if(m.type==="video")  return pickRow("src","Video file","video") + pickRow("poster","Cover image (poster)","video","image/*");
   if(m.type==="compare")
     return pickRow("after","After (e.g. final comp)","img")
          + pickRow("before","Before (e.g. greenscreen plate)","img")
@@ -823,7 +870,7 @@ function clean(){
 /* ---------- toolbar ---------- */
 $("#addProj").onclick = ()=>{
   const n=data.length+1;
-  data.push({ code:String(n).padStart(3,"0"), title:"New Project", role:"", year:String(new Date().getFullYear()), media:[] });
+  data.push({ code:String(n).padStart(3,"0"), title:"New Project", role:"", year:String(new Date().getFullYear()), description:"", media:[] });
   sel=data.length-1; pvCat="stills"; pvIdx=0; renderAll();
 };
 $("#exportBtn").onclick = async ()=>{

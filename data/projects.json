@@ -1,7 +1,7 @@
 {
   "about": {
     "name": "Martin Fir",
-    "bio": "I am a 3D Generalist and Technical Artist based in Slovenia, working across film, games, and interactive media. I specialize in real-time graphics, VFX, procedural workflows, and custom tool development. I use Blender, Houdini, Nuke, Unity, Unreal Engine, Substance 3D, Photoshop, and Python to create assets, tools, and visual systems that bridge artistic vision with technical execution.",
+    "bio": "I am a 3D Generalist and Technical Artist based in Slovenia, working across film, games, and interactive media. I specialize in real-time graphics, VFX, Character design, procedural workflows, and custom tool development. I use Blender, Nuke, Unity, Unreal Engine, Substance 3D, Photoshop, and Python to create assets, tools, and visual systems that bridge artistic vision with technical execution.",
     "location": "Ljubljana",
     "photo": "img/martinfir.jpg",
     "email": "hello@martinfir.com",
@@ -20,7 +20,11 @@
       "Aerodrom.io",
       "Bright Visuals"
     ],
-    "accent": "#ffbd2e"
+    "accent": "#ffbd2e",
+    "photoCrop": {
+      "x": 19.12109375,
+      "y": 10.688085937499999
+    }
   },
   "disciplines": [
     {
