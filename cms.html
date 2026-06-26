@@ -900,11 +900,10 @@ function openFramePicker(m){
         renderAll();
       }catch(e){ btn.textContent="Capture frame"; btn.disabled=false; alert("Capture failed: "+e.message); }
     }
-    // Re-seek to current time and wait for frame to be ready
     const t=vid.currentTime;
+    vid.pause();
     vid.addEventListener("seeked", doCapture, {once:true});
-    vid.currentTime=t+0.001>vid.duration?t-0.001:t+0.001; // nudge to force seeked event
-    setTimeout(()=>{ vid.currentTime=t; },50);
+    vid.currentTime=t;
   };
 }
 

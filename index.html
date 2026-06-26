@@ -1,46 +1,34 @@
 <!--
-  ============================================================
-  MARTIN FIR — personal site  ·  single-screen edition
-  No-scroll one-pager. Drop straight onto GitHub Pages.
 
-  LAYOUT
-    ┌───────────────────────────────────────────────┐
-    │  header: wordmark · role · live timecode        │
-    ├──────────────┬────────────────────────────────┤
-    │  RAIL (1/3)  │  VIEWER (2/3)                    │
-    │  vertical    │  project title + meta            │
-    │  carousel of │  ┌────────────────────────────┐  │
-    │  projects    │  │  main media (image or 3D)  │  │
-    │  (scrolls    │  └────────────────────────────┘  │
-    │   inside)    │  tabs · thumbnail strip          │
-    └──────────────┴────────────────────────────────┘
+  ALL ASSETS ARE RELATIVE.
+  ALL KNOWLEDGE IS ABSOLUTE.
+  PRAISE THE ONE WHO TAKES THE RULE HOLY.
+  DEFEND THE SPIRIT AS ITS TRUE.
 
-  HOW TO EDIT YOUR WORK
-    Everything lives in the PROJECTS array in the <script type="module">
-    block near the bottom. Each project:
+  NEVER TAKE THE SPIRIT AWAY.
+  NEVER TAKE THE SPIRIT AWAY.
+  NEVER TAKE THE SPIRIT AWAY.
 
-      {
-        code: "001",
-        title: "Project Name",
-        role:  "Comp · Keying",
-        year:  "2026",
-        media: [
-          { type:"image", cat:"stills",    src:"img/shot01.jpg", caption:"Final comp" },
-          { type:"image", cat:"bts",       src:"img/bts01.jpg",  caption:"On set" },
-          { type:"image", cat:"breakdown", src:"img/brk01.jpg",  caption:"Key + screen" },
-          { type:"model", cat:"stills",    src:"models/thing.glb", caption:"Asset" }
-        ]
-      }
+  ───────────────────────────────────────
 
-    - type:"image"  -> shows the image. Until you add real files the
-      placeholder gradient "plates" render instead, so it never looks broken.
-    - type:"model"  -> loads a GLB in the Three.js stage (Draco + meshopt +
-      animation supported). Same viewer you had, now per-project.
-    - cat must be one of: stills | bts | breakdown  (drives the tabs).
+         ☿  ·  ♃  ·  ♄  ·  ♂  ·  ☽  ·  ☉  ·  ♀
 
-  SERVE OVER HTTP (not file://) or the GLB fetches + ES modules fail:
-    python -m http.server 8000   ·   or just push to GitHub Pages.
-  ============================================================
+  ───────────────────────────────────────
+
+                    ☉
+                    │
+         ♃ ─────────┼───────── ♄
+                   ╱│╲
+                 ╱  │  ╲
+               ☽    ⊕    ♂
+                 ╲  │  ╱
+                   ╲│╱
+         ♀ ─────────┼───────── ☿
+                    │
+                    ✦
+
+  ───────────────────────────────────────
+
 -->
 <!doctype html>
 <html lang="en">
@@ -71,7 +59,6 @@
     --tracking-d: -.02em;
     --bloom:         1;    /* glow intensity   0→∞  */
     --bloom-r:       1;    /* glow radius mult 0→∞  */
-    --barrel:        1;    /* barrel strength  0→∞  */
     --vignette-size: 1;    /* how far vig extends   */
     --vignette-dark: 1;    /* how dark vig is  0-1  */
     --scanlines:     1;    /* line opacity     0→∞  */
@@ -147,8 +134,6 @@
   }
   .tc .dot{ box-shadow:0 0 calc(7px * var(--bloom-r)) 2px var(--bloom-dot); }
   .tab.active{ box-shadow:0 0 calc(10px * var(--bloom-r)) var(--bloom-tab); }
-  /* CRT barrel — applied in JS once displacement map is generated */
-  .app{ will-change:filter; }
 
   /* ---- app shell ------------------------------------------------------ */
   .app{
@@ -158,6 +143,7 @@
   }
 
   header{
+    position:sticky; top:0; z-index:90; overflow:visible;
     display:flex; align-items:baseline; justify-content:space-between;
     gap:1rem; padding:.85rem 1.4rem;
     border-bottom:1px solid var(--line);
@@ -518,11 +504,26 @@
     box-shadow:0 24px 64px rgba(0,0,0,.8);
     animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
     padding:10px 10px 18px; gap:.85rem;
-    margin:auto;
+    margin:6vh auto auto;
   }
   .about-card.closing{
     animation:cardOut .2s cubic-bezier(.4,0,1,1) forwards;
   }
+  .brand-name-block{
+    display:flex; align-items:baseline; gap:1.8rem;
+  }
+  .about-tab{
+    position:absolute; left:1.4rem; top:100%; margin-top:-1px;
+    background:var(--bg); border:1px solid var(--line); border-top:none;
+    border-radius:0 0 4px 4px;
+    padding:.2rem .6rem .22rem;
+    font:600 .38rem/1 'IBM Plex Mono',monospace;
+    letter-spacing:.22em; text-transform:uppercase;
+    color:#fff; cursor:pointer;
+    transition:color .15s, border-color .15s;
+    z-index:91;
+  }
+  .about-tab:hover{ color:var(--safe); border-color:var(--safe-dim); }
   .about-card-close{
     position:absolute; top:.55rem; right:.55rem; z-index:2;
     background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
@@ -722,15 +723,6 @@
 <div class="fx fx-vig"></div>
 <div class="fx fx-bloom"></div>
 
-<!-- SVG filter for CRT barrel distortion — map src injected by JS -->
-<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
-  <defs>
-    <filter id="crt-barrel" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
-      <feImage id="crt-map" result="map" preserveAspectRatio="xMidYMid slice"/>
-      <feDisplacementMap in="SourceGraphic" in2="map" scale="35" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </defs>
-</svg>
 
 <div id="preloader" hidden aria-hidden="true">
   <svg id="pre-sigil" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg"
@@ -782,6 +774,7 @@
       <h1><span class="lit">Martin</span> Fir</h1>
       <span class="role">VFX · Concept · 3D Generalist · Ljubljana</span>
     </div>
+    <button class="about-tab" id="aboutTab" aria-label="Open about">ABOUT</button>
     <div class="tc">
       <a class="mail" id="headerMail" href="mailto:hello@martinfir.com">hello@martinfir.com</a>
     </div>
@@ -1376,6 +1369,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && !document.getElementById("aboutOverlay").hasAttribute("hidden")) closeAbout();
 });
 document.querySelector(".brand h1").addEventListener("click", openAbout);
+document.getElementById("aboutTab").addEventListener("click", openAbout);
 
 /* ---- project detail modal ---------------------------------------------- */
 let CUR_PROJ=-1, CUR_MI=0;
@@ -1560,7 +1554,6 @@ async function loadProjects(){
           applyAccent(ABOUT.accent);
           applyTracking(ABOUT.tracking);
           applyBloom(ABOUT.bloom, ABOUT.bloomRadius);
-          initCRTBarrel(ABOUT.barrel);
           applyVignette(ABOUT.vignetteSize ?? ABOUT.vignette, ABOUT.vignetteDark);
           applyScanlines(ABOUT.scanlines, ABOUT.scanlineGap);
           applyGrain(ABOUT.grain, ABOUT.grainSize);
@@ -1606,26 +1599,6 @@ function applyBloom(intensity, radius){
 function applyVignette(size, dark){ const r=document.documentElement; r.style.setProperty("--vignette-size",size??1); r.style.setProperty("--vignette-dark",dark??1); }
 function applyScanlines(v,gap){    const r=document.documentElement; r.style.setProperty("--scanlines",v??1); r.style.setProperty("--scanline-gap",gap??2); }
 function applyGrain(v,size){       const r=document.documentElement; r.style.setProperty("--grain",v??1); r.style.setProperty("--grain-size",size??1); }
-function initCRTBarrel(strength){
-  strength = strength??1;
-  const appEl=document.querySelector(".app");
-  if(strength<=0){ appEl.style.filter=""; return; }
-  const k=0.40*strength;
-  const s=256, c=document.createElement("canvas"); c.width=c.height=s;
-  const ctx=c.getContext("2d"), img=ctx.createImageData(s,s);
-  for(let y=0;y<s;y++) for(let x=0;x<s;x++){
-    const nx=(x/(s-1))*2-1, ny=(y/(s-1))*2-1;
-    const r2=nx*nx+ny*ny;
-    const i=(y*s+x)*4;
-    img.data[i]  =Math.max(0,Math.min(255,Math.round((0.5+k*nx*r2*0.5)*255)));
-    img.data[i+1]=Math.max(0,Math.min(255,Math.round((0.5+k*ny*r2*0.5)*255)));
-    img.data[i+2]=128; img.data[i+3]=255;
-  }
-  ctx.putImageData(img,0,0);
-  const el=document.getElementById("crt-map");
-  if(el){ el.setAttribute("href",c.toDataURL()); appEl.style.filter="url(#crt-barrel)"; }
-}
-initCRTBarrel(1);
 updateBloomColors();
 
 /* ---- preloader ---- */
