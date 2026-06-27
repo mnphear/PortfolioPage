@@ -193,11 +193,13 @@
     {
       "type": "video",
       "src": "video/nvidia-share.mp4",
+      "poster": "video/nvidia-share-poster.jpg",
       "caption": ""
     },
     {
       "type": "video",
       "src": "video/etc-prstiljudi.mp4",
+      "poster": "video/etc-prstiljudi-poster.jpg",
       "caption": ""
     },
     {

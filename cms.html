@@ -752,6 +752,14 @@ function renderSketchbookHtml(){
             Pick<input type="file" class="sk-pick" data-i="${i}" accept="image/*,video/*" style="display:none">
           </label>
         </div>
+        ${(item.type==="video"||/\.(mp4|webm|mov)$/i.test(item.src||""))?`
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <input class="sk-poster path" data-i="${i}" type="text" value="${esc(item.poster||"")}" placeholder="video/poster.jpg" style="flex:1;font:inherit;font-size:.5rem;background:#0e0e10;border:1px solid #232327;color:#e9e7e1;padding:.15rem .4rem">
+          <label class="pick-btn" style="cursor:pointer;font-size:.48rem;padding:.18rem .4rem;background:#0e0e10;border:1px solid #232327;color:#8a8880;white-space:nowrap">
+            Poster<input type="file" class="sk-poster-pick" data-i="${i}" accept="image/*" style="display:none">
+          </label>
+        </div>`:""}
+
         <input class="sk-cap" data-i="${i}" type="text" value="${esc(item.caption||"")}" placeholder="caption (optional)" style="font:inherit;font-size:.5rem;letter-spacing:.05em;background:#0e0e10;border:1px solid #232327;color:#e9e7e1;padding:.15rem .4rem">
       </div>
       <div style="display:flex;flex-direction:column;gap:.2rem">
@@ -798,6 +806,15 @@ function attachSketchbookHandlers(){
     blobUrls[path]=URL.createObjectURL(file);
     sketchbook[i].src=path;
     sketchbook[i].type=/\.(mp4|webm|mov)$/i.test(file.name)?"video":"image";
+    renderEditor(); save();
+  });
+  document.querySelectorAll(".sk-poster").forEach(inp=> inp.oninput=()=>{ sketchbook[+inp.dataset.i].poster=inp.value; save(); });
+  document.querySelectorAll(".sk-poster-pick").forEach(fi=> fi.onchange=()=>{
+    const file=fi.files[0]; if(!file) return;
+    const i=+fi.dataset.i;
+    const path="video/"+sanitize(file.name);
+    blobUrls[path]=URL.createObjectURL(file);
+    sketchbook[i].poster=path;
     renderEditor(); save();
   });
 }
