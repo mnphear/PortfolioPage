@@ -33,8 +33,8 @@
     ],
     "accent": "#ffbd2e",
     "photoCrop": {
-      "x": 19.12109375,
-      "y": 10.688085937499999
+      "x": 14.5078125,
+      "y": 30.2380859375
     }
   },
   "disciplines": [
@@ -81,7 +81,7 @@
           "cat": "stills",
           "caption": "",
           "src": "video/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264.mp4",
-          "poster": ""
+          "poster": "img/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264-poster.jpg"
         },
         {
           "type": "image",
@@ -112,7 +112,7 @@
           "cat": "stills",
           "caption": "",
           "src": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4",
-          "poster": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4"
+          "poster": "img/bigbang-januar-30let-20s-master-yt-h-264-1-poster.jpg"
         }
       ]
     },
@@ -127,7 +127,7 @@
           "cat": "stills",
           "caption": "",
           "src": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264.mp4",
-          "poster": ""
+          "poster": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264-poster.jpg"
         },
         {
           "type": "image",
@@ -172,6 +172,43 @@
           "poster": ""
         }
       ]
+    }
+  ],
+  "sketchbook": [
+    {
+      "type": "image",
+      "src": "img/hazmatguy.png",
+      "caption": ""
+    },
+    {
+      "type": "image",
+      "src": "img/clonepilot.png",
+      "caption": ""
+    },
+    {
+      "type": "image",
+      "src": "img/pumpkinthief.png",
+      "caption": ""
+    },
+    {
+      "type": "video",
+      "src": "video/nvidia-share.mp4",
+      "caption": ""
+    },
+    {
+      "type": "video",
+      "src": "video/etc-prstiljudi.mp4",
+      "caption": ""
+    },
+    {
+      "type": "image",
+      "src": "img/flash.png",
+      "caption": ""
+    },
+    {
+      "type": "image",
+      "src": "img/laser.png",
+      "caption": ""
     }
   ]
 }

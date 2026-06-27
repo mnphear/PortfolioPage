@@ -313,7 +313,8 @@ const COLORS = [
 let data = [];
 let sel = 0;
 let pvCat = "stills", pvIdx = 0;
-let edTab = "project"; // "about" | "project"
+let edTab = "project"; // "about" | "project" | "sketchbook"
+let sketchbook = [];
 const blobUrls = {};                 // path -> objectURL for local preview
 let fileHandle = null;               // FileSystemFileHandle for direct save
 let disciplines = [];                // [{label, color}] — global tag palette
@@ -386,6 +387,7 @@ async function init(){
           data=j.projects||[];
           if(j.disciplines) disciplines=j.disciplines.map(d=>({label:d.label,color:d.color||"teal"}));
           if(j.about) Object.assign(about,j.about);
+          if(j.sketchbook) sketchbook=j.sketchbook;
         }
       }
     }catch(e){ /* file:// or missing */ }
@@ -411,7 +413,7 @@ async function init(){
 
 /* ---------- autosave ---------- */
 function save(){
-  try{ localStorage.setItem("fir_cms_draft", JSON.stringify({about,disciplines,projects:data})); }catch(e){}
+  try{ localStorage.setItem("fir_cms_draft", JSON.stringify({about,disciplines,projects:data,sketchbook})); }catch(e){}
   statusEl.textContent = "draft saved · " + new Date().toLocaleTimeString();
 }
 function restore(){
@@ -424,6 +426,7 @@ function restore(){
         data=d.projects||[];
         if(d.disciplines) disciplines=d.disciplines;
         if(d.about) Object.assign(about,d.about);
+        if(d.sketchbook) sketchbook=d.sketchbook;
       }
       return true;
     }
@@ -725,17 +728,98 @@ function renderProjects(){
   });
 }
 
+/* ---------- sketchbook ---------- */
+function renderSketchbookHtml(){
+  const rows = sketchbook.map((item,i)=>{
+    const thumb = resolveSrc(item.src);
+    const isVid = item.type==="video" || /\.(mp4|webm|mov)$/i.test(item.src||"");
+    const preview = thumb
+      ? (isVid ? `<video src="${thumb}" muted playsinline preload="metadata" style="width:64px;height:48px;object-fit:cover;display:block;border-radius:2px;border:1px solid #232327"></video>`
+                : `<img src="${thumb}" style="width:64px;height:48px;object-fit:cover;display:block;border-radius:2px;border:1px solid #232327">`)
+      : `<span class="plate neutral" style="width:64px;height:48px;display:block;border-radius:2px"></span>`;
+    return `<div class="sk-row" data-ski="${i}" style="display:flex;gap:.5rem;align-items:center;padding:.4rem 0;border-bottom:1px solid #1a1a1e">
+      ${preview}
+      <div style="flex:1;display:flex;flex-direction:column;gap:.3rem">
+        <div style="display:flex;gap:.4rem">
+          <select class="sk-type" data-i="${i}" style="font:inherit;font-size:.52rem;background:#0e0e10;border:1px solid #232327;color:#e9e7e1;padding:.15rem .3rem">
+            <option value="image"${(item.type||"image")==="image"?" selected":""}>image</option>
+            <option value="video"${item.type==="video"?" selected":""}>video</option>
+          </select>
+          <div class="field" style="flex:1;margin:0">
+            <input class="sk-src path" data-i="${i}" type="text" value="${esc(item.src||"")}" placeholder="img/sketch.webp" style="width:100%">
+          </div>
+          <label class="pick-btn" style="cursor:pointer;font-size:.48rem;padding:.18rem .4rem;background:#0e0e10;border:1px solid #232327;color:#8a8880;white-space:nowrap;align-self:center">
+            Pick<input type="file" class="sk-pick" data-i="${i}" accept="image/*,video/*" style="display:none">
+          </label>
+        </div>
+        <input class="sk-cap" data-i="${i}" type="text" value="${esc(item.caption||"")}" placeholder="caption (optional)" style="font:inherit;font-size:.5rem;letter-spacing:.05em;background:#0e0e10;border:1px solid #232327;color:#e9e7e1;padding:.15rem .4rem">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.2rem">
+        <button class="icon sk-up" data-i="${i}" title="Move up">↑</button>
+        <button class="icon sk-dn" data-i="${i}" title="Move down">↓</button>
+        <button class="icon danger sk-del" data-i="${i}" title="Delete">✕</button>
+      </div>
+    </div>`;
+  }).join("");
+  return `<div class="disc-section">
+    <h2>Sketchbook <span style="color:#55534d;font-weight:400">${sketchbook.length} item(s)</span></h2>
+    <div id="sk-list">${rows||'<div style="color:#55534d;font-size:.55rem;padding:.5rem 0">No items yet.</div>'}</div>
+    <div style="display:flex;gap:.4rem;margin-top:.7rem">
+      <label style="flex:2;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:.4rem .6rem;background:#0e0e10;border:1px solid #34b3bd;color:#34b3bd;font:inherit;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;border-radius:3px">
+        + Pick files
+        <input type="file" id="sk-add-pick" multiple accept="image/*,video/*" style="display:none">
+      </label>
+      <button id="sk-add" style="flex:1">+ Empty</button>
+    </div>
+  </div>`;
+}
+function attachSketchbookHandlers(){
+  $("#sk-add").onclick = ()=>{ sketchbook.push({type:"image",src:"",caption:""}); renderEditor(); save(); };
+  document.getElementById("sk-add-pick").onchange = e=>{
+    Array.from(e.target.files).forEach(file=>{
+      const folder=/\.(mp4|webm|mov)$/i.test(file.name)?"video":"img";
+      const path=folder+"/"+sanitize(file.name);
+      blobUrls[path]=URL.createObjectURL(file);
+      sketchbook.push({type:/\.(mp4|webm|mov)$/i.test(file.name)?"video":"image",src:path,caption:""});
+    });
+    renderEditor(); save();
+  };
+  document.querySelectorAll(".sk-del").forEach(b=> b.onclick=()=>{ sketchbook.splice(+b.dataset.i,1); renderEditor(); save(); });
+  document.querySelectorAll(".sk-up").forEach(b=> b.onclick=()=>{ const i=+b.dataset.i; if(i>0){ swap(sketchbook,i,i-1); renderEditor(); save(); } });
+  document.querySelectorAll(".sk-dn").forEach(b=> b.onclick=()=>{ const i=+b.dataset.i; if(i<sketchbook.length-1){ swap(sketchbook,i,i+1); renderEditor(); save(); } });
+  document.querySelectorAll(".sk-src").forEach(inp=> inp.oninput=()=>{ sketchbook[+inp.dataset.i].src=inp.value; save(); });
+  document.querySelectorAll(".sk-cap").forEach(inp=> inp.oninput=()=>{ sketchbook[+inp.dataset.i].caption=inp.value; save(); });
+  document.querySelectorAll(".sk-type").forEach(sel=> sel.onchange=()=>{ sketchbook[+sel.dataset.i].type=sel.value; renderEditor(); save(); });
+  document.querySelectorAll(".sk-pick").forEach(fi=> fi.onchange=()=>{
+    const file=fi.files[0]; if(!file) return;
+    const i=+fi.dataset.i;
+    const folder = /\.(mp4|webm|mov)$/i.test(file.name) ? "video" : "img";
+    const path = folder+"/"+sanitize(file.name);
+    blobUrls[path]=URL.createObjectURL(file);
+    sketchbook[i].src=path;
+    sketchbook[i].type=/\.(mp4|webm|mov)$/i.test(file.name)?"video":"image";
+    renderEditor(); save();
+  });
+}
+
 function renderEditor(){
   const el = $("#editor");
   const tabsHtml = `<div class="ed-tabs">
     <button class="ed-tab${edTab==="about"?" active":""}" data-etab="about">About</button>
     <button class="ed-tab${edTab==="project"?" active":""}" data-etab="project">Project</button>
+    <button class="ed-tab${edTab==="sketchbook"?" active":""}" data-etab="sketchbook">Sketchbook</button>
   </div>`;
 
   if(edTab==="about"){
     el.innerHTML = tabsHtml + renderAboutHtml() + renderDiscHtml();
     el.querySelectorAll(".ed-tab").forEach(b=>b.onclick=()=>{ edTab=b.dataset.etab; renderEditor(); });
     attachAboutHandlers(); attachDiscHandlers(); return;
+  }
+
+  if(edTab==="sketchbook"){
+    el.innerHTML = tabsHtml + renderSketchbookHtml();
+    el.querySelectorAll(".ed-tab").forEach(b=>b.onclick=()=>{ edTab=b.dataset.etab; renderEditor(); });
+    attachSketchbookHandlers(); return;
   }
 
   const aboutHtml = "";
@@ -911,18 +995,33 @@ async function openFramePicker(m){
   document.getElementById("fp-capture").onclick=()=>{
     const btn=document.getElementById("fp-capture");
     btn.textContent="Capturing…"; btn.disabled=true;
-    function doCapture(){
+    async function doCapture(){
       try{
         const c=document.createElement("canvas");
         c.width=vid.videoWidth||1920; c.height=vid.videoHeight||1080;
         c.getContext("2d").drawImage(vid,0,0,c.width,c.height);
         const dataUrl=c.toDataURL("image/jpeg",0.85);
-        const base=(m.src||"video/clip").replace(/\.[^.]+$/,"");
+        const base=(m.src||"video/clip").replace(/blob:[^/]*\/[^/]*\//,"").replace(/\.[^.]+$/,"");
         const path=base+"-poster.jpg";
+        const filename=path.split("/").pop();
         blobUrls[path]=dataUrl;
         m.poster=path;
         ov.remove();
         renderAll();
+        // Save via native picker so user can navigate straight to repo/video/
+        const blob=await fetch(dataUrl).then(r=>r.blob());
+        if(window.showSaveFilePicker){
+          try{
+            const fh=await window.showSaveFilePicker({
+              suggestedName:filename,
+              types:[{description:"JPEG poster",accept:{"image/jpeg":[".jpg",".jpeg"]}}]
+            });
+            const w=await fh.createWritable();
+            await w.write(blob); await w.close();
+          }catch(e){ if(e.name!=="AbortError"){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); } }
+        }else{
+          const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+        }
       }catch(e){ btn.textContent="Capture frame"; btn.disabled=false; alert("Capture failed: "+e.message); }
     }
     const t=vid.currentTime;
@@ -1050,10 +1149,15 @@ function filesNote(){
       if(m[k] && blobUrls[m[k]]) items.push(m[k]);
     });
   }));
+  sketchbook.forEach(item=>{ if(item.src && blobUrls[item.src]) items.push(item.src); });
   if(!items.length) return "";
   const uniq=[...new Set(items)];
   return `<div class="files-note"><h3>Files to place in repo</h3><ul>
-    ${uniq.map(p=>`<li><code>${p}</code><span>copy here & commit</span></li>`).join("")}
+    ${uniq.map(p=>{
+      const blob=blobUrls[p];
+      const dl=blob?` <a href="${blob}" download="${p.split('/').pop()}" style="color:var(--safe);text-decoration:none;font-size:.7em">↓ download</a>`:"";
+      return `<li><code>${p}</code>${dl}<span>→ place in repo & commit</span></li>`;
+    }).join("")}
   </ul></div>`;
 }
 
@@ -1082,7 +1186,7 @@ function esc(v){ return (v==null?"":String(v)).replace(/"/g,"&quot;").replace(/<
 function swap(a,i,j){ const t=a[i]; a[i]=a[j]; a[j]=t; }
 function clean(){
   const disciplinesOut=disciplines.map(d=>{ const c=colorFor(d.color); return {label:d.label,color:d.color,hex:c.hex,dim:c.dim}; });
-  return JSON.stringify({about,disciplines:disciplinesOut,projects:data},null,2);
+  return JSON.stringify({about,disciplines:disciplinesOut,projects:data,sketchbook},null,2);
 }
 
 /* ---------- toolbar ---------- */

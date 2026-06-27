@@ -46,9 +46,9 @@
   <g stroke="#9b6ec8">
     <path d="M 76,33 A 27,27 0 0,1 124,33" stroke-width="2.2"/>
   </g>
-  <line x1="124" y1="33" x2="200" y2="-22" stroke="#9b6ec8" stroke-width=".6" stroke-dasharray="3 2"/>
-  <text x="202" y="-14" fill="#9b6ec8" font-weight="700" font-size="11">R</text>
-  <text x="214" y="-14" fill="#555" font-size="9.5">arc (×2 shared)</text>
+  <line x1="124" y1="33" x2="186" y2="-14" stroke="#9b6ec8" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="188" y="-6" fill="#9b6ec8" font-weight="700" font-size="11">R</text>
+  <text x="198" y="-6" fill="#555" font-size="9.5">arc (×2)</text>
 
   <!-- ── T  wide crossbar  coral ── -->
   <g stroke="#e05a4e">
@@ -64,18 +64,18 @@
   <g stroke="#34b3bd">
     <line x1="100" y1="10" x2="100" y2="200" stroke-width="2.2"/>
   </g>
-  <line x1="100" y1="155" x2="240" y2="155" stroke="#34b3bd" stroke-width=".6" stroke-dasharray="3 2"/>
-  <text x="242" y="159" fill="#34b3bd" font-weight="700" font-size="11">I</text>
-  <text x="252" y="159" fill="#555" font-size="9.5">spine (×2 shared)</text>
+  <line x1="100" y1="155" x2="210" y2="155" stroke="#34b3bd" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="212" y="159" fill="#34b3bd" font-weight="700" font-size="11">I</text>
+  <text x="222" y="159" fill="#555" font-size="9.5">spine (×2)</text>
 
   <!-- ── N  diagonal arms  sage ── -->
   <g stroke="#6aaa6e">
     <line x1="24"  y1="70" x2="60"  y2="118" stroke-width="2.2"/>
     <line x1="176" y1="70" x2="140" y2="118" stroke-width="2.2"/>
   </g>
-  <line x1="176" y1="70" x2="230" y2="56" stroke="#6aaa6e" stroke-width=".6" stroke-dasharray="3 2"/>
-  <text x="232" y="60" fill="#6aaa6e" font-weight="700" font-size="11">N</text>
-  <text x="242" y="60" fill="#555" font-size="9.5">diagonal arms</text>
+  <line x1="176" y1="70" x2="212" y2="60" stroke="#6aaa6e" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="214" y="64" fill="#6aaa6e" font-weight="700" font-size="11">N</text>
+  <text x="224" y="64" fill="#555" font-size="9.5">diag. arms</text>
 
   <!-- ── F  mid crossbar  pink ── -->
   <g stroke="#c86ea8">
@@ -98,13 +98,14 @@
 
   <!-- ── diamond — seal marker, no letter ── -->
   <path d="M 100,111 L 107,118 L 100,125 L 93,118 Z" stroke="#444" stroke-width=".9"/>
-  <line x1="107" y1="118" x2="240" y2="105" stroke="#444" stroke-width=".6" stroke-dasharray="3 2"/>
-  <text x="242" y="109" fill="#444" font-size="9">⊕ seal node</text>
+  <line x1="107" y1="118" x2="210" y2="108" stroke="#444" stroke-width=".6" stroke-dasharray="3 2"/>
+  <text x="212" y="112" fill="#444" font-size="9">⊕ seal node</text>
 
   <!-- ── title ── -->
   <text x="-78" y="-30" fill="#e9e7e1" font-size="10" font-weight="700" letter-spacing="2">MARTIN FIR — SIGIL BREAKDOWN</text>
 
   <!-- ── legend note ── -->
-  <text x="-78" y="270" fill="#444" font-size="8.5">Repeated letters I and R share the same stroke. The circle and compass ticks are the ritual frame, not letterforms.</text>
+  <text x="-78" y="264" fill="#444" font-size="8">I and R appear twice in MARTIN FIR — both share one stroke each.</text>
+  <text x="-78" y="274" fill="#444" font-size="8">Circle + compass ticks are the ritual frame, not letterforms.</text>
 
 </svg>

@@ -40,7 +40,41 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link id="gfonts" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link id="gfonts" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=fallback" rel="stylesheet">
+
+<style>
+/* ---- self-hosted fonts (no flash, no external dep) ---- */
+@font-face{
+  font-family:'Russo One';
+  font-style:normal; font-weight:400; font-display:block;
+  src:url('fonts/russo-one-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Space Mono';
+  font-style:normal; font-weight:400; font-display:block;
+  src:url('fonts/space-mono-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Space Mono';
+  font-style:normal; font-weight:700; font-display:block;
+  src:url('fonts/space-mono-700.woff2') format('woff2');
+}
+</style>
+
+<!-- apply cached accent/tracking before first paint to prevent flash -->
+<script>
+(function(){
+  try{
+    var r=document.documentElement.style;
+    var a=localStorage.getItem('fir_accent');
+    var d=localStorage.getItem('fir_accent_dim');
+    var t=localStorage.getItem('fir_tracking');
+    if(a) r.setProperty('--safe',a);
+    if(d) r.setProperty('--safe-dim',d);
+    if(t) r.setProperty('--tracking-d',t);
+  }catch(e){}
+})();
+</script>
 
 <style>
   :root{
@@ -172,6 +206,16 @@
   @media (max-width:520px){
     .brand .role{ display:none; }
     .tc .rec{ display:none; }
+    .about-tab{
+      font-size:.52rem;
+      padding:.32rem .9rem .34rem;
+      letter-spacing:.18em;
+    }
+    .role-pill{
+      font-size:.48rem;
+      padding:.04rem .22rem;
+      letter-spacing:.06em;
+    }
   }
   .tc{
     display:flex; align-items:center; gap:.7rem;
@@ -181,6 +225,110 @@
   .tc .dot{ width:7px; height:7px; border-radius:50%; background:var(--safe); animation:blink 1s steps(1) infinite; }
   @keyframes blink{ 50%{opacity:.15} }
   .tc b{ color:var(--ink); font-weight:600; }
+
+  /* ---- header folder tabs -------------------------------------------- */
+  .header-tabs{
+    position:absolute; left:1.4rem; top:100%; margin-top:-1px;
+    display:flex; gap:6px; z-index:91;
+  }
+  .header-tab{
+    background:var(--bg); border:1px solid var(--line); border-top:none;
+    padding:.32rem 1.1rem .34rem .72rem;
+    font:600 .68rem/1 'IBM Plex Mono',monospace;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:#fff; cursor:pointer;
+    transform:skewX(-12deg); transform-origin:top left;
+    transition:color .15s, border-color .15s;
+  }
+  .header-tab span{ display:inline-block; transform:skewX(12deg); }
+  .header-tab:hover{ color:var(--safe); border-color:var(--safe-dim); }
+
+  /* ---- sketchbook modal ---------------------------------------------- */
+  .sk-overlay{
+    position:fixed; inset:0; z-index:80;
+    background:rgba(0,0,0,.78); backdrop-filter:blur(6px);
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:.5rem; overflow-y:auto;
+    animation:overlayIn .2s ease forwards;
+  }
+  .sk-overlay[hidden]{ display:none; }
+  .sk-card{
+    position:relative; width:min(92vw,1400px);
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; margin:calc(var(--nav-h,52px) + 2.8rem) auto auto;
+    box-shadow:0 24px 64px rgba(0,0,0,.8);
+    animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
+    overflow:hidden;
+    max-height:92dvh; display:flex; flex-direction:column;
+  }
+  .sk-card.closing{ animation:cardOut .2s cubic-bezier(.4,0,1,1) forwards; }
+  .sk-card-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:.7rem 1rem .5rem;
+    border-bottom:1px solid var(--line);
+  }
+  .sk-card-title{
+    font-family:var(--font-d),sans-serif; font-weight:800;
+    font-size:1.1rem; letter-spacing:var(--tracking-d); text-transform:uppercase;
+    color:var(--ink);
+  }
+  .sk-card-close{
+    position:absolute; top:.55rem; right:.55rem;
+    background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.12); border-radius:50%;
+    color:var(--ink-dim); font-size:.8rem;
+    cursor:pointer; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    transition:color .12s, background .12s; line-height:1;
+  }
+  .sk-card-close:hover{ color:var(--ink); background:rgba(0,0,0,.85); }
+  .sk-grid{
+    flex:1; overflow-y:auto; padding:.5rem;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem;
+    align-content:start;
+  }
+  .sk-empty{
+    grid-column:1/-1; padding:2rem; font-size:.6rem; letter-spacing:.2em;
+    color:var(--ink-faint); text-transform:uppercase; text-align:center;
+  }
+  .sk-item{
+    overflow:hidden; cursor:zoom-in; background:var(--bg);
+    border:1px solid var(--line); border-radius:3px;
+    transition:border-color .15s;
+  }
+  .sk-item:hover{ border-color:var(--safe-dim); }
+  .sk-item img, .sk-item video{ display:block; width:100%; height:auto; }
+  .sk-cap{
+    font-size:.5rem; letter-spacing:.1em; color:var(--ink-faint);
+    padding:.3rem .6rem .4rem;
+  }
+  /* lightbox */
+  .sk-lightbox{
+    position:fixed; inset:0; z-index:97;
+    background:rgba(0,0,0,.93); backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:center;
+    padding:1.5rem; cursor:zoom-out;
+    animation:overlayIn .18s ease forwards;
+  }
+  .sk-lightbox img, .sk-lightbox video{
+    max-width:100%; max-height:92dvh; object-fit:contain;
+    border-radius:3px; cursor:default;
+  }
+  .sk-lightbox-cap{
+    position:absolute; bottom:1.2rem; left:50%; transform:translateX(-50%);
+    font-size:.55rem; letter-spacing:.14em; color:var(--ink-dim); text-align:center;
+    pointer-events:none;
+  }
+  .sk-lightbox-close{
+    position:absolute; top:.8rem; right:1rem;
+    background:none; border:none; color:var(--ink-dim);
+    font-size:1.2rem; cursor:pointer; line-height:1; transition:color .12s;
+  }
+  .sk-lightbox-close:hover{ color:var(--ink); }
+  @media(max-width:520px){
+    .header-tab{ font-size:.55rem; padding:.28rem .9rem .3rem .58rem; }
+    .sk-grid{ grid-template-columns:repeat(2,1fr); }
+  }
 
   /* ---- stage --------------------------------------------------------- */
   .stage{ display:block; }
@@ -518,7 +666,7 @@
     background:var(--bg); border:1px solid var(--line); border-top:none;
     border-radius:0 0 4px 4px;
     padding:.2rem .6rem .22rem;
-    font:600 .38rem/1 'IBM Plex Mono',monospace;
+    font:600 .52rem/1 'IBM Plex Mono',monospace;
     letter-spacing:.22em; text-transform:uppercase;
     color:#fff; cursor:pointer;
     transition:color .15s, border-color .15s;
@@ -593,7 +741,7 @@
     to{   opacity:0; transform:translateY(32px); }
   }
   .proj-overlay{
-    position:fixed; inset:0; z-index:82;
+    position:fixed; inset:0; z-index:95;
     background:rgba(7,7,8,0);
     display:flex; align-items:stretch;
     transition:background .28s ease;
@@ -714,7 +862,7 @@
   }
   #pre-sigil{
     width:clamp(180px,32vmin,260px); height:clamp(180px,32vmin,260px);
-    color:var(--safe);
+    color:var(--safe); overflow:visible;
   }
   #pre-sigil.blooming{
     animation:sigilBloom 2.2s cubic-bezier(.4,0,.2,1) forwards;
@@ -789,7 +937,10 @@
       <h1><span class="lit">Martin</span> Fir</h1>
       <span class="role">VFX · Concept · 3D Generalist · Ljubljana</span>
     </div>
-    <button class="about-tab" id="aboutTab" aria-label="Open about">ABOUT</button>
+    <div class="header-tabs">
+      <button class="header-tab" id="aboutTab" aria-label="Open about"><span>About</span></button>
+      <button class="header-tab" id="sketchTab" aria-label="Open sketchbook"><span>Sketchbook</span></button>
+    </div>
     <div class="tc">
       <a class="mail" id="headerMail" href="mailto:hello@martinfir.com">hello@martinfir.com</a>
     </div>
@@ -862,6 +1013,17 @@
     <!-- MOBILE: flat project list (hidden on desktop via CSS) -->
     <div class="m-projects" id="mobileProjects"></div>
 
+  </div>
+
+  <!-- sketchbook modal -->
+  <div class="sk-overlay" id="skOverlay" hidden>
+    <div class="sk-card" id="skCard">
+      <button class="sk-card-close" id="skClose">×</button>
+      <div class="sk-card-head">
+        <div class="sk-card-title">Sketchbook</div>
+      </div>
+      <div class="sk-grid" id="skGrid"></div>
+    </div>
   </div>
 
   <!-- about modal -->
@@ -1001,7 +1163,7 @@ const FONTS = [
   { id:"syne-roboto",  label:"Syne + Roboto Mono",            display:'"Syne"',                  mono:'"Roboto Mono",ui-monospace,monospace',
     url:"https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Roboto+Mono:wght@400;500&display=swap" },
   { id:"russo-space",  label:"Russo One + Space Mono",         display:'"Russo One"',              mono:'"Space Mono",ui-monospace,monospace',
-    url:"https://fonts.googleapis.com/css2?family=Russo+One&family=Space+Mono:wght@400;700&display=swap" },
+    url:null }, // self-hosted in fonts/ — no external request needed
   { id:"akira-space",  label:"Akira Expanded + Space Mono",    display:'"Akira Expanded"',         mono:'"Space Mono",ui-monospace,monospace',
     url:null },
   { id:"dela-plex",        label:"Dela Gothic One + IBM Plex",      display:'"Dela Gothic One"',        mono:'"IBM Plex Mono",ui-monospace,monospace',
@@ -1032,13 +1194,17 @@ function darkenHex(hex, f){
 }
 function applyAccent(hex){
   if(!hex) return;
+  const dim=darkenHex(hex,.45);
   document.documentElement.style.setProperty("--safe", hex);
-  document.documentElement.style.setProperty("--safe-dim", darkenHex(hex, .45));
+  document.documentElement.style.setProperty("--safe-dim", dim);
   updateBloomColors();
+  try{ localStorage.setItem('fir_accent',hex); localStorage.setItem('fir_accent_dim',dim); }catch(e){}
 }
 
 function applyTracking(val){
-  document.documentElement.style.setProperty("--tracking-d", (val ?? -.02)+"em");
+  const v=(val??-.02)+"em";
+  document.documentElement.style.setProperty("--tracking-d", v);
+  try{ localStorage.setItem('fir_tracking',v); }catch(e){}
 }
 
 function applyFont(id){
@@ -1368,6 +1534,7 @@ function openAbout(){
   const coEl=document.getElementById("aboutCompanies");
   coEl.innerHTML=(a.companies&&a.companies.length)
     ?`<div class="about-section-label">Experience</div><div class="about-tags">${a.companies.map(c=>`<span class="about-tag">${c}</span>`).join("")}</div>`:"";
+  if(!document.getElementById('skOverlay').hasAttribute('hidden')) closeSketchbook();
   document.getElementById("aboutOverlay").removeAttribute("hidden");
 }
 function closeAbout(){
@@ -1383,7 +1550,12 @@ document.getElementById("aboutClose").addEventListener("click", closeAbout);
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && !document.getElementById("aboutOverlay").hasAttribute("hidden")) closeAbout();
 });
-document.querySelector(".brand h1").addEventListener("click", openAbout);
+document.querySelector(".brand h1").addEventListener("click", ()=>{
+  if(!document.getElementById("aboutOverlay").hasAttribute("hidden")) closeAbout();
+  if(!document.getElementById("skOverlay").hasAttribute("hidden")) closeSketchbook();
+  if(!document.getElementById("projOverlay").hasAttribute("hidden")) closeProject();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
 document.getElementById("aboutTab").addEventListener("click", openAbout);
 
 /* ---- project detail modal ---------------------------------------------- */
@@ -1581,6 +1753,7 @@ async function loadProjects(){
           const c=COLORS.find(x=>x.id===d.color)||{hex:d.hex||"#8a8880",dim:d.dim||"#3a3a3e"};
           return {label:d.label, hex:d.hex||c.hex, dim:d.dim||c.dim};
         });
+        if(j.sketchbook) SKETCHBOOK=j.sketchbook;
       }
     }
   }catch(e){ /* file:// or missing json -> keep inline defaults */ }
@@ -1673,6 +1846,80 @@ function initPreloader(){
     setTimeout(()=>{ ov.setAttribute("hidden",""); ov.style.opacity=""; }, 700);
   }, 3300);
 }
+/* ---- sketchbook ---------------------------------------------------- */
+let SKETCHBOOK = [];
+
+function openSketchbook(){
+  if(!document.getElementById('aboutOverlay').hasAttribute('hidden')) closeAbout();
+  buildSketchbook();
+  document.getElementById('skOverlay').removeAttribute('hidden');
+}
+function closeSketchbook(){
+  const card = document.getElementById('skCard');
+  card.classList.add('closing');
+  card.addEventListener('animationend', ()=>{
+    document.getElementById('skOverlay').setAttribute('hidden','');
+    card.classList.remove('closing');
+  }, {once:true});
+}
+
+function buildSketchbook(){
+  const grid = document.getElementById('skGrid');
+  grid.innerHTML = '';
+  if(!SKETCHBOOK.length){
+    grid.innerHTML = '<div class="sk-empty">Nothing here yet — add items to the sketchbook array in projects.json</div>';
+    return;
+  }
+  SKETCHBOOK.forEach((item, i)=>{
+    const el = document.createElement('div');
+    el.className = 'sk-item';
+    const src = item.src || '';
+    const isVideo = item.type === 'video' || /\.(mp4|webm|mov)$/i.test(src);
+    if(src && isVideo){
+      const v = document.createElement('video');
+      v.src = src; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+      el.appendChild(v);
+      grid.appendChild(el);
+      v.play().catch(()=>{});
+    } else {
+      el.innerHTML = src
+        ? `<img src="${src}" alt="${item.caption||''}" loading="lazy">`
+        : `<div style="aspect-ratio:4/3;background:var(--bg-rail)"></div>`;
+      grid.appendChild(el);
+    }
+    el.addEventListener('click', ()=> openSkLightbox(i));
+  });
+}
+
+function openSkLightbox(i){
+  const item = SKETCHBOOK[i]; if(!item) return;
+  const lb = document.createElement('div');
+  lb.className = 'sk-lightbox';
+  const src = item.src || '';
+  const isVideo = item.type === 'video' || /\.(mp4|webm|mov)$/i.test(src);
+  lb.innerHTML = (src
+    ? (isVideo
+        ? `<video src="${src}" controls autoplay muted loop playsinline style="max-width:100%;max-height:92dvh"></video>`
+        : `<img src="${src}" alt="${item.caption||''}">`)
+    : '')
+    + (item.caption ? `<div class="sk-lightbox-cap">${item.caption}</div>` : '')
+    + `<button class="sk-lightbox-close" aria-label="Close">×</button>`;
+  function closeLb(){ lb.style.opacity='0'; lb.style.transition='opacity .18s'; setTimeout(()=>lb.remove(),200); }
+  lb.addEventListener('click', e=>{ if(e.target===lb) closeLb(); });
+  lb.querySelector('.sk-lightbox-close').addEventListener('click', closeLb);
+  document.body.appendChild(lb);
+}
+
+document.getElementById('sketchTab').addEventListener('click', openSketchbook);
+document.getElementById('skClose').addEventListener('click', closeSketchbook);
+document.getElementById('skOverlay').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeSketchbook(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    if(document.querySelector('.sk-lightbox')) document.querySelector('.sk-lightbox').remove();
+    else if(!document.getElementById('skOverlay').hasAttribute('hidden')) closeSketchbook();
+  }
+});
+
 initPreloader();
 loadProjects();
 </script>
