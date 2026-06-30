@@ -228,13 +228,13 @@
 
   /* ---- header folder tabs -------------------------------------------- */
   .header-tabs{
-    position:absolute; right:1.4rem; top:100%; margin-top:-1px;
-    display:flex; gap:6px; z-index:91;
+    position:absolute; left:13rem; top:100%; margin-top:-1px;
+    display:flex; gap:5px; z-index:91;
   }
   .header-tab{
     background:var(--bg); border:1px solid var(--line); border-top:none;
-    padding:.32rem 1.1rem .34rem .72rem;
-    font:600 .68rem/1 'IBM Plex Mono',monospace;
+    padding:.28rem 1rem .3rem .65rem;
+    font:600 .65rem/1 'IBM Plex Mono',monospace;
     letter-spacing:.18em; text-transform:uppercase;
     color:#fff; cursor:pointer;
     transform:skewX(-12deg); transform-origin:top left;
@@ -325,11 +325,9 @@
     font-size:1.2rem; cursor:pointer; line-height:1; transition:color .12s;
   }
   .sk-lightbox-close:hover{ color:var(--ink); }
-  @media(max-width:1024px){
-    .header-tab{ font-size:.75rem; padding:.38rem 1.3rem .4rem .82rem; }
-  }
   @media(max-width:520px){
-    .header-tab{ font-size:.7rem; padding:.36rem 1.2rem .38rem .76rem; }
+    .header-tabs{ left:10rem; }
+    .header-tab{ font-size:.58rem; padding:.24rem .8rem .26rem .54rem; }
     .sk-grid{ grid-template-columns:repeat(2,1fr); }
   }
 
@@ -1092,7 +1090,7 @@ const DEFAULT_PROJECTS = [
     media:[
       { type:"image", cat:"stills",    src:"img/jokerout-dollhouse.webp",  caption:"Dollhouse — final comp" },
       { type:"image", cat:"stills",    src:"img/jokerout-livingroom.webp", caption:"Living room — final comp" },
-      { type:"video", cat:"breakdown", src:"video/jokerout-breakdown.mp4", poster:"video/jokerout-breakdown-poster.webp", caption:"Nuke comp breakdown — night version" },
+      { type:"video", cat:"breakdown", src:"https://media.martinfir.com/jokerout-breakdown.mp4", poster:"img/posters/jokerout-breakdown-poster.webp", caption:"Nuke comp breakdown — night version" },
     ]
   },
   {
@@ -1590,7 +1588,7 @@ function renderProjModal(){
   const m=p.media[CUR_MI];
   if(m){
     if(m.type==="image"&&m.src)       mainEl.innerHTML=`<img src="${m.src}" alt="">`;
-    else if(m.type==="video"&&m.src)  mainEl.innerHTML=`<video src="${m.src}"${m.poster?` poster="${m.poster}"`:""} autoplay muted loop playsinline controls></video>`;
+    else if(m.type==="video"&&m.src)  mainEl.innerHTML=`<video src="${m.src}"${m.poster?` poster="${m.poster}"`:""} preload="metadata" autoplay muted loop playsinline controls></video>`;
     else if(m.type==="compare")       mainEl.innerHTML=buildProjCompare(m);
     else                              mainEl.innerHTML=`<span class="plate p${CUR_PROJ%4}" style="position:absolute;inset:0"></span>`;
   } else {
@@ -1673,7 +1671,7 @@ document.addEventListener("keydown",e=>{
 function projMediaHtml(m, pi){
   if(!m) return `<span class="plate p${pi%4}"></span>`;
   if(m.type==="image"&&m.src)      return `<img src="${m.src}" alt="" loading="lazy">`;
-  if(m.type==="video"&&m.src)      return `<video src="${m.src}"${m.poster?` poster="${m.poster}"`:""} autoplay muted loop playsinline></video>`;
+  if(m.type==="video"&&m.src)      return `<video src="${m.src}"${m.poster?` poster="${m.poster}"`:""} preload="metadata" autoplay muted loop playsinline></video>`;
   if(m.type==="compare")           return buildProjCompare(m);
   return `<span class="plate p${pi%4}"></span>`;
 }
@@ -1920,7 +1918,7 @@ function openSkLightbox(i){
   const isVideo = item.type === 'video' || /\.(mp4|webm|mov)$/i.test(src);
   lb.innerHTML = (src
     ? (isVideo
-        ? `<video src="${src}" controls autoplay muted loop playsinline style="max-width:100%;max-height:92dvh"></video>`
+        ? `<video src="${src}" preload="metadata" controls autoplay muted loop playsinline style="max-width:100%;max-height:92dvh"></video>`
         : `<img src="${src}" alt="${item.caption||''}">`)
     : '')
     + (item.caption ? `<div class="sk-lightbox-cap">${item.caption}</div>` : '')

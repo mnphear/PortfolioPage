@@ -1,1 +1,5 @@
 .DS_Store
+
+# Large video files are hosted on Cloudflare R2 (media.martinfir.com), not in git.
+video/
+*.mp4

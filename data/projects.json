@@ -80,7 +80,7 @@
           "type": "video",
           "cat": "stills",
           "caption": "",
-          "src": "video/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264.mp4",
+          "src": "https://media.martinfir.com/joker-out-odsevi-sonca.mp4",
           "poster": "img/joker-out-odsevi-sonca-official-video-joker-out-official-1080p-h264-poster.jpg"
         },
         {
@@ -111,7 +111,7 @@
           "type": "video",
           "cat": "stills",
           "caption": "",
-          "src": "video/bigbang-januar-30let-20s-master-yt-h-264-1.mp4",
+          "src": "https://media.martinfir.com/bigbang-30let.mp4",
           "poster": "img/bigbang-januar-30let-20s-master-yt-h-264-1-poster.jpg"
         }
       ]
@@ -126,8 +126,8 @@
           "type": "video",
           "cat": "stills",
           "caption": "",
-          "src": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264.mp4",
-          "poster": "video/broken-lock-100-tv-channels-broken-lock-1080p-h264-poster.jpg"
+          "src": "https://media.martinfir.com/broken-lock.mp4",
+          "poster": "img/posters/broken-lock-100-tv-channels-broken-lock-1080p-h264-poster.jpg"
         },
         {
           "type": "image",
@@ -147,7 +147,7 @@
           "type": "video",
           "cat": "stills",
           "caption": "",
-          "src": "video/maxim-premium-mandelj-full-prores422.mp4",
+          "src": "https://media.martinfir.com/maxim-mandelj.mp4",
           "poster": ""
         },
         {
@@ -168,7 +168,7 @@
           "type": "video",
           "cat": "stills",
           "caption": "",
-          "src": "video/a1-krovni-web.mp4",
+          "src": "https://media.martinfir.com/a1-krovni.mp4",
           "poster": ""
         }
       ]
@@ -192,14 +192,14 @@
     },
     {
       "type": "video",
-      "src": "video/nvidia-share.mp4",
-      "poster": "video/nvidia-share-poster.jpg",
+      "src": "https://media.martinfir.com/nvidia-share.mp4",
+      "poster": "img/posters/nvidia-share-poster.jpg",
       "caption": ""
     },
     {
       "type": "video",
-      "src": "video/etc-prstiljudi.mp4",
-      "poster": "video/etc-prstiljudi-poster.jpg",
+      "src": "https://media.martinfir.com/etc-prstiljudi.mp4",
+      "poster": "img/posters/etc-prstiljudi-poster.jpg",
       "caption": ""
     },
     {
