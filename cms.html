@@ -8,10 +8,13 @@
     - Loads data/projects.json on open (falls back to empty if missing).
     - Add / delete / reorder projects and their media.
     - Media types: image · video · model (GLB) · compare (before/after wiper).
-    - Pick a local file -> it previews instantly and suggests the path
-      (img/… or video/… or models/…). You still copy that file into the
-      matching folder in your repo, then commit. Static hosting can't write
-      files for you — this just keeps names + paths consistent.
+    - Pick a local file -> it previews instantly and suggests the path.
+      Images/models/posters get a repo path (img/… , models/… , img/posters/…)
+      that you copy into the repo and commit. VIDEOS are too big for Cloudflare
+      Pages (25 MiB cap), so a picked video gets a media.martinfir.com URL and
+      is uploaded to the R2 "media" bucket instead — the "Files" panel prints the
+      exact `wrangler r2 object put …` command. Static hosting can't write files
+      for you; this just keeps names + paths consistent.
     - Live preview mirrors the site's right-hand viewer.
     - "Save projects.json" uses the File System Access API: first click opens a
       file picker (navigate to data/projects.json and confirm), then every
@@ -263,6 +266,19 @@
 const CATS = [["stills","Stills"],["bts","BTS"],["breakdown","Breakdown"]];
 const TYPES = ["image","video","model","compare"];
 const FOLDER = { image:"img", video:"video", model:"models", compare:"img" };
+
+/* Videos are too big for Cloudflare Pages (25 MiB cap), so they live in the
+   R2 bucket below and are served from MEDIA_BASE. Posters stay in the repo
+   under POSTER_FOLDER (they're small). Picking a video sets its path to the
+   full R2 URL; the "Files" panel then prints the wrangler upload command. */
+const MEDIA_BASE    = "https://media.martinfir.com/";  // R2 public hostname
+const R2_BUCKET     = "media";                          // wrangler bucket name
+const POSTER_FOLDER = "img/posters";                    // posters ship with the repo
+const VIDEO_RE      = /\.(mp4|webm|mov|m4v)$/i;
+function isVideoName(name){ return VIDEO_RE.test(name||""); }
+function isRemote(path){ return /^https?:\/\//i.test(path||""); }
+function r2VideoUrl(filename){ return MEDIA_BASE + sanitize(filename); }
+function posterPath(filename){ return POSTER_FOLDER + "/" + sanitize(filename); }
 const FONTS = [
   { id:"default",     label:"Big Shoulders + IBM Plex Mono",
     url:"https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
@@ -785,10 +801,10 @@ function attachSketchbookHandlers(){
   $("#sk-add").onclick = ()=>{ sketchbook.push({type:"image",src:"",caption:""}); renderEditor(); save(); };
   document.getElementById("sk-add-pick").onchange = e=>{
     Array.from(e.target.files).forEach(file=>{
-      const folder=/\.(mp4|webm|mov)$/i.test(file.name)?"video":"img";
-      const path=folder+"/"+sanitize(file.name);
+      const isVid=isVideoName(file.name);
+      const path=isVid?r2VideoUrl(file.name):"img/"+sanitize(file.name);
       blobUrls[path]=URL.createObjectURL(file);
-      sketchbook.push({type:/\.(mp4|webm|mov)$/i.test(file.name)?"video":"image",src:path,caption:""});
+      sketchbook.push({type:isVid?"video":"image",src:path,caption:""});
     });
     renderEditor(); save();
   };
@@ -801,18 +817,18 @@ function attachSketchbookHandlers(){
   document.querySelectorAll(".sk-pick").forEach(fi=> fi.onchange=()=>{
     const file=fi.files[0]; if(!file) return;
     const i=+fi.dataset.i;
-    const folder = /\.(mp4|webm|mov)$/i.test(file.name) ? "video" : "img";
-    const path = folder+"/"+sanitize(file.name);
+    const isVid = isVideoName(file.name);
+    const path = isVid?r2VideoUrl(file.name):"img/"+sanitize(file.name);
     blobUrls[path]=URL.createObjectURL(file);
     sketchbook[i].src=path;
-    sketchbook[i].type=/\.(mp4|webm|mov)$/i.test(file.name)?"video":"image";
+    sketchbook[i].type=isVid?"video":"image";
     renderEditor(); save();
   });
   document.querySelectorAll(".sk-poster").forEach(inp=> inp.oninput=()=>{ sketchbook[+inp.dataset.i].poster=inp.value; save(); });
   document.querySelectorAll(".sk-poster-pick").forEach(fi=> fi.onchange=()=>{
     const file=fi.files[0]; if(!file) return;
     const i=+fi.dataset.i;
-    const path="video/"+sanitize(file.name);
+    const path=posterPath(file.name);
     blobUrls[path]=URL.createObjectURL(file);
     sketchbook[i].poster=path;
     renderEditor(); save();
@@ -1018,8 +1034,9 @@ async function openFramePicker(m){
         c.width=vid.videoWidth||1920; c.height=vid.videoHeight||1080;
         c.getContext("2d").drawImage(vid,0,0,c.width,c.height);
         const dataUrl=c.toDataURL("image/jpeg",0.85);
-        const base=(m.src||"video/clip").replace(/blob:[^/]*\/[^/]*\//,"").replace(/\.[^.]+$/,"");
-        const path=base+"-poster.jpg";
+        // poster derives from the video's basename but is stored in the repo (img/posters/)
+        const stem=(m.src||"clip").split("/").pop().replace(/\.[^.]+$/,"")||"clip";
+        const path=POSTER_FOLDER+"/"+stem+"-poster.jpg";
         const filename=path.split("/").pop();
         blobUrls[path]=dataUrl;
         m.poster=path;
@@ -1050,19 +1067,24 @@ async function openFramePicker(m){
 
 /* type-specific path + file inputs */
 function mediaFields(m,i){
-  const pickRow = (key,label,folder,accept) => `
+  const pickRow = (key,label,folder,accept) => {
+   const ph = (folder==="video" && key!=="poster") ? MEDIA_BASE+"clip.mp4"
+            : (folder==="video") ? POSTER_FOLDER+"/clip-poster.jpg"
+            : folder+"/filename";
+   return `
     <div class="field">
       <label>${label}</label>
       <div class="pick">
-        <input class="path" type="text" data-k="${key}" value="${esc(m[key])}" placeholder="${folder}/filename">
+        <input class="path" type="text" data-k="${key}" value="${esc(m[key])}" placeholder="${ph}">
         <label class="filebtn">Pick<input type="file" data-target="${key}" data-folder="${folder}" accept="${accept||(folder==='video'?'video/*':folder==='models'?'.glb,.gltf':'image/*')}"></label>
       </div>
       <div class="hint" data-hint="${key}"></div>
     </div>`;
+  };
   if(m.type==="image")  return pickRow("src","Image file","img");
   if(m.type==="model")  return pickRow("src","Model file (GLB)","models");
-  if(m.type==="video")  return pickRow("src","Video file","video")
-    + pickRow("poster","Cover image (poster)","video","image/*")
+  if(m.type==="video")  return pickRow("src","Video file (→ R2)","video")
+    + pickRow("poster","Cover image (poster · in repo)","video","image/*")
     + `<button class="fp-btn" style="margin-top:.3rem;width:100%;font-size:.55rem;letter-spacing:.16em" data-fpick="${i}">⬡ Pick frame from video</button>`;
   if(m.type==="compare")
     return pickRow("after","After (e.g. final comp)","img")
@@ -1078,9 +1100,15 @@ function mediaFields(m,i){
 function handlePick(fi, m){
   const file = fi.files[0]; if(!file) return;
   const key = fi.dataset.target, folder = fi.dataset.folder;
-  const path = folder + "/" + sanitize(file.name);
+  let path;
+  if(folder==="video"){
+    // src -> hosted on R2; poster (or any image) -> stays in repo under img/posters
+    path = (key==="poster") ? posterPath(file.name) : r2VideoUrl(file.name);
+  }else{
+    path = folder + "/" + sanitize(file.name);
+  }
   blobUrls[path] = URL.createObjectURL(file);   // live preview source
-  m[key] = path;                                 // committed relative path
+  m[key] = path;                                 // committed path (R2 URL or repo-relative)
   renderAll();
 }
 
@@ -1169,13 +1197,25 @@ function filesNote(){
   sketchbook.forEach(item=>{ if(item.src && blobUrls[item.src]) items.push(item.src); });
   if(!items.length) return "";
   const uniq=[...new Set(items)];
-  return `<div class="files-note"><h3>Files to place in repo</h3><ul>
-    ${uniq.map(p=>{
-      const blob=blobUrls[p];
-      const dl=blob?` <a href="${blob}" download="${p.split('/').pop()}" style="color:var(--safe);text-decoration:none;font-size:.7em">↓ download</a>`:"";
-      return `<li><code>${p}</code>${dl}<span>→ place in repo & commit</span></li>`;
-    }).join("")}
-  </ul></div>`;
+  const dlLink=(p,name)=>{ const blob=blobUrls[p]; return blob?` <a href="${blob}" download="${name}" style="color:var(--safe);text-decoration:none;font-size:.7em">↓ download</a>`:""; };
+  const repo=uniq.filter(p=>!isRemote(p));
+  const r2  =uniq.filter(p=>isRemote(p));
+  let html=`<div class="files-note">`;
+  if(repo.length){
+    html+=`<h3>Files to place in repo</h3><ul>
+      ${repo.map(p=>`<li><code>${p}</code>${dlLink(p,p.split('/').pop())}<span>→ place in repo & commit</span></li>`).join("")}
+    </ul>`;
+  }
+  if(r2.length){
+    html+=`<h3>Videos to upload to R2 (bucket: ${R2_BUCKET})</h3><ul>
+      ${r2.map(p=>{
+        const name=p.replace(MEDIA_BASE,"");
+        const cmd=`wrangler r2 object put ${R2_BUCKET}/${name} --file=./${name}`;
+        return `<li><code>${p}</code>${dlLink(p,name)}<div style="margin-top:.2rem"><code style="font-size:.7em;color:#8a8880;user-select:all">${cmd}</code></div></li>`;
+      }).join("")}
+    </ul>`;
+  }
+  return html+`</div>`;
 }
 
 /* ---------- generic drag reorder ---------- */
