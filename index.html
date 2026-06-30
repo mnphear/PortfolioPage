@@ -862,7 +862,13 @@
     100%{ filter:drop-shadow(0 0 16px var(--safe)) drop-shadow(0 0 38px var(--safe)) drop-shadow(0 0 4px var(--safe)); }
   }
   #pre-sigil{
-    width:clamp(180px,32vmin,260px); height:clamp(180px,32vmin,260px);
+    /* Pad the box so the drop-shadow bloom has headroom: mobile (iOS) clips a
+       filter to the element's layer bounds, which otherwise squares off the
+       glow at the bloom peak. Negative margin keeps the visual footprint —
+       and the flex centring / gap to the name — exactly as before. */
+    width:calc(clamp(180px,32vmin,260px) + 112px);
+    height:calc(clamp(180px,32vmin,260px) + 112px);
+    padding:56px; margin:-56px;
     color:var(--safe); overflow:visible;
   }
   #pre-sigil.blooming{
