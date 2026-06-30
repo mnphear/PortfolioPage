@@ -1579,6 +1579,17 @@ function openProject(pi){
   renderProjModal();
 }
 
+/* Browsers don't reliably honour the muted attribute on a <video> injected via
+   innerHTML, so they block autoplay. Re-assert muted/playsInline as properties
+   and kick off playback once the element is in the DOM. */
+function forcePlay(root){
+  if(!root) return;
+  root.querySelectorAll("video[autoplay]").forEach(v=>{
+    v.muted=true; v.playsInline=true;
+    const p=v.play();
+    if(p&&typeof p.catch==="function") p.catch(()=>{});
+  });
+}
 function renderProjModal(){
   const p=PROJECTS[CUR_PROJ];
   document.getElementById("projPrev").disabled=(CUR_MI===0);
@@ -1595,6 +1606,7 @@ function renderProjModal(){
     mainEl.innerHTML=`<span class="plate p${CUR_PROJ%4}" style="position:absolute;inset:0"></span>`;
   }
   if(m&&m.type==="compare") initProjCompare(mainEl.querySelector(".cmp"));
+  forcePlay(mainEl);
   // filmstrip
   const stripEl=document.getElementById("projStrip");
   stripEl.innerHTML=p.media.map((mm,i)=>{
@@ -1718,11 +1730,13 @@ function buildMobileProjects(){
         const m=p.media[mi];
         heroEl.innerHTML=projMediaHtml(m,pi);
         if(m.type==="compare") initProjCompare(heroEl.querySelector(".cmp"));
+        forcePlay(heroEl);
         capEl.textContent=m.caption||"";
         infoEl.classList.toggle("hidden", mi!==0);
       });
     });
     el.appendChild(div);
+    forcePlay(div);
   });
 }
 
@@ -1927,6 +1941,7 @@ function openSkLightbox(i){
   lb.addEventListener('click', e=>{ if(e.target===lb) closeLb(); });
   lb.querySelector('.sk-lightbox-close').addEventListener('click', closeLb);
   document.body.appendChild(lb);
+  forcePlay(lb);
 }
 
 document.getElementById('sketchTab').addEventListener('click', openSketchbook);
