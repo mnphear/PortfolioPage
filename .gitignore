@@ -3,3 +3,10 @@
 # Large video files are hosted on Cloudflare R2 (media.martinfir.com), not in git.
 video/
 *.mp4
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
