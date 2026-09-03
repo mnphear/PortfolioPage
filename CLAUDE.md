@@ -11,10 +11,10 @@ discipline labels. Clicking a frame opens a **full-screen modal** whose media is
 a **horizontal scroll-snap carousel**: arrows, dots, ←/→ and swipe step through
 that project's media. There is no side rail and no viewer pane.
 
-On **phones (≤760px) the feed goes full-bleed**: no column gutters, and each
-project gets a screen of its own (`min-height:100dvh - nav`, vertically
-centred). The 16:9 ratio is kept on purpose — cropping to a portrait frame would
-cut the sides off the compositions.
+On **phones (≤760px) the feed goes full-bleed and full-height**: no column
+gutters, `.proj` is exactly `100dvh - nav` tall, and `.proj-stage` drops its
+16:9 ratio (`flex:1; aspect-ratio:auto`) to take all the height left over above
+the title bar. The media is `object-fit:cover`, so it crops to fill the screen.
 
 **Exactly one video plays at a time.** Every `<video>` is watched by a single
 IntersectionObserver; the most visible clip plays and all others pause. While
@@ -24,12 +24,11 @@ dot marking the live one; **modal clips use the browser's native player**
 (`controls`). Media can be an image, a video, a before/after **compare** wiper,
 or a **3D model**.
 
-Aesthetic: monochrome and quiet. Flat black, near-white ink, light greys for
-secondary text, white accent — colour comes only from the work. **One sans
-across the whole site** (Helvetica Neue/Arial): `--font-d` and `--font-m` are
-the same stack, no serif, no webfont request by default. No grain/scanline/
-vignette FX (the layers still exist and are wired to the CMS sliders, but all
-default to 0).
+Aesthetic: monochrome and quiet, on a **light warm-grey canvas** with near-black
+ink — colour comes only from the work. **One sans across the whole site**
+(Helvetica Neue/Arial): `--font-d` and `--font-m` are the same stack, no serif,
+no webfont request by default. No grain/scanline/vignette FX (the layers still
+exist and are wired to the CMS sliders, but all default to 0).
 
 ## Stack & constraints
 
@@ -162,15 +161,32 @@ Colors/fonts live in CSS custom properties in `:root`. The accent is a **single
 variable** used everywhere:
 
 ```css
---safe: #ffffff;   /* monochrome — colour comes from the work */
---safe-dim: #4a4a4e;
---ink-dim:   #b9b7b0;   /* light grey, secondary text  */
---ink-faint: #8a8880;   /* light grey, tertiary text   */
+--bg:        #dedcd6;   /* light warm-grey canvas      */
+--panel:     #ebeae6;   /* cards/modals above the canvas */
+--frame:     #cecdc7;   /* media frame before art loads */
+--line:      #c2c0b9;
+--ink:       #16150f;   /* near-black, warm            */
+--ink-dim:   #55534c;   /* secondary text              */
+--ink-faint: #86847c;   /* tertiary text               */
+--safe:      #16150f;   /* accent — colour comes from the work */
+--on-media:  #ffffff;   /* overlays that sit ON footage */
+--rim:       #ffffff;   /* 3D key light                */
 ```
 
-The Three.js rim light reads `--safe` at runtime, so changing those two lines
-recolors the whole UI **and** the 3D key light. Never hardcode the accent hex in
-new code — reference `var(--safe)` (CSS) or read the property (JS).
+Never hardcode the accent hex in new code — reference `var(--safe)` (CSS) or
+read the property (JS). Two traps, both fixed once already:
+
+- **Anything drawn over media** (the live dot, compare line/grip/tags, the model
+  loader) must use `--on-media`, not `--safe`. It has to read over arbitrary
+  footage regardless of the page theme.
+- **The Three.js rim light reads `--rim`, not `--safe`** — on a light page the
+  accent is near-black and would switch the key light off entirely.
+
+`applyAccent()` derives `--safe-dim` by **mixing toward `--bg`**, not by
+darkening. On a light canvas darkening makes the "dim" shade stronger than the
+accent, inverting every active/inactive pair (the carousel dots caught this).
+`about.accent` in `projects.json` is authoritative and overrides `:root` at
+runtime — it must stay dark while the canvas is light.
 
 Fonts: **one sans everywhere.** `--font-d` and `--font-m` are both the
 Helvetica Neue/Arial stack; the `editorial` entry in `FONTS` has `url:null`, so

@@ -50,14 +50,19 @@
 
 <style>
   :root{
-    --bg:        #0a0a0a;   /* flat black canvas */
-    --panel:     #101010;
-    --line:      #26262a;
-    --ink:       #f4f1ea;   /* near-white */
-    --ink-dim:   #b9b7b0;   /* light grey — secondary text */
-    --ink-faint: #8a8880;   /* light grey — tertiary text */
-    --safe:      #ffffff;   /* monochrome accent — colour comes from the work */
-    --safe-dim:  #4a4a4e;
+    --bg:        #dedcd6;   /* light grey canvas */
+    --panel:     #ebeae6;   /* cards / modals sit slightly above the canvas */
+    --frame:     #cecdc7;   /* media frame backing before the art loads */
+    --line:      #c2c0b9;
+    --ink:       #16150f;   /* near-black, warm */
+    --ink-dim:   #55534c;   /* secondary text */
+    --ink-faint: #86847c;   /* tertiary text */
+    --safe:      #16150f;   /* monochrome accent — colour comes from the work */
+    --safe-dim:  #a9a79f;
+    /* Overlays that sit ON media stay light-on-dark whatever the page theme is,
+       so they read over arbitrary footage. --rim keeps the 3D key light white. */
+    --on-media:  #ffffff;
+    --rim:       #ffffff;
     --radius:    2px;
     /* one sans across the whole site — display and body share the stack */
     --font-d:    "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -130,7 +135,7 @@
     position:fixed; top:0; left:0; right:0; z-index:70;
     display:flex; align-items:center; justify-content:space-between; gap:1rem;
     padding:.9rem var(--gutter);
-    background:rgba(10,10,10,.82);
+    background:rgba(222,220,214,.82);
     backdrop-filter:blur(14px);
     border-bottom:1px solid var(--line);
   }
@@ -185,7 +190,7 @@
   /* the one-at-a-time preview frame */
   .proj-stage{
     position:relative; aspect-ratio:16/9;
-    background:#000 center/cover no-repeat; border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--frame) center/cover no-repeat; border:1px solid var(--line); border-radius:var(--radius);
     overflow:hidden; cursor:pointer;
     transition:border-color .25s ease, opacity .75s ease, transform .75s cubic-bezier(.22,.6,.36,1);
   }
@@ -207,7 +212,7 @@
   .proj.is-live .stage-live{ display:block; }
   .stage-live i{
     display:block; width:7px; height:7px; border-radius:50%;
-    background:var(--safe); box-shadow:0 1px 6px rgba(0,0,0,.9);
+    background:var(--on-media); box-shadow:0 1px 6px rgba(0,0,0,.9);
     animation:blink 1.4s steps(1) infinite;
   }
   @keyframes blink{ 50%{ opacity:.15 } }
@@ -218,11 +223,11 @@
     width:34px; height:34px; padding:0;
     background:rgba(0,0,0,.5); backdrop-filter:blur(4px);
     border:1px solid rgba(255,255,255,.18); border-radius:50%;
-    cursor:pointer; color:var(--ink);
+    cursor:pointer; color:var(--on-media);
     transition:color .15s, border-color .15s, background .15s;
   }
   .proj.is-live .stage-snd{ display:flex; }
-  .stage-snd:hover{ border-color:var(--safe); background:rgba(0,0,0,.75); }
+  .stage-snd:hover{ border-color:var(--on-media); background:rgba(0,0,0,.75); }
   .stage-snd svg{ width:16px; height:16px; display:block; }
   .stage-snd .snd-cone{ fill:currentColor; }
   .stage-snd .snd-wave, .stage-snd .snd-x{
@@ -256,7 +261,7 @@
   @keyframes pmOut{ from{ opacity:1; transform:none; } to{ opacity:0; transform:translateY(18px); } }
   .pm-overlay{
     position:fixed; inset:0; z-index:95;
-    background:rgba(7,7,8,.97); backdrop-filter:blur(10px);
+    background:rgba(222,220,214,.97); backdrop-filter:blur(10px);
     display:grid; grid-template-rows:auto minmax(0,1fr) auto;
     animation:overlayIn .2s ease forwards;
   }
@@ -317,12 +322,12 @@
   .pm-arrow{
     position:absolute; top:50%; transform:translateY(-50%); z-index:6;
     width:40px; height:40px; border-radius:50%;
-    background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+    background:rgba(255,255,255,.7); backdrop-filter:blur(4px);
     border:1px solid var(--line); color:var(--ink-dim);
     display:flex; align-items:center; justify-content:center;
     font-size:1rem; cursor:pointer; transition:color .12s, border-color .12s, opacity .18s;
   }
-  .pm-arrow:hover{ color:var(--ink); border-color:var(--safe); }
+  .pm-arrow:hover{ color:var(--ink); border-color:var(--safe); background:rgba(255,255,255,.92); }
   .pm-arrow[disabled]{ opacity:0; pointer-events:none; }
   .pm-arrow.prev{ left:clamp(.4rem, 1.5vw, 1.2rem); }
   .pm-arrow.next{ right:clamp(.4rem, 1.5vw, 1.2rem); }
@@ -354,10 +359,10 @@
 
   /* placeholder plates when a src is missing */
   .plate{ position:absolute; inset:0; }
-  .plate.p0{ background:radial-gradient(120% 90% at 30% 20%, #232323, #0c0c0d 70%); }
-  .plate.p1{ background:radial-gradient(120% 90% at 70% 30%, #1c1c1e, #0c0c0d 70%); }
-  .plate.p2{ background:radial-gradient(120% 90% at 50% 80%, #262626, #0c0c0d 70%); }
-  .plate.p3{ background:linear-gradient(135deg, #1a1a1e, #0c0c0d); }
+  .plate.p0{ background:radial-gradient(120% 90% at 30% 20%, #d8d6d0, #c5c3bc 70%); }
+  .plate.p1{ background:radial-gradient(120% 90% at 70% 30%, #d4d2cb, #c1bfb8 70%); }
+  .plate.p2{ background:radial-gradient(120% 90% at 50% 80%, #dad8d2, #c8c6bf 70%); }
+  .plate.p3{ background:linear-gradient(135deg, #d2d0ca, #bfbdb6); }
   .plate.green{ background:repeating-linear-gradient(135deg,#00b140 0 18px,#03a23b 18px 36px); }
   .plate-tag{
     position:absolute; top:12px; left:14px;
@@ -370,17 +375,17 @@
   .cmp .cmp-layer{ position:absolute; inset:0; }   /* the clipped "after" layer */
   .cmp-line{
     position:absolute; top:0; bottom:0; width:2px; margin-left:-1px;
-    background:var(--safe); pointer-events:none; box-shadow:0 0 8px rgba(0,0,0,.6);
+    background:var(--on-media); pointer-events:none; box-shadow:0 0 8px rgba(0,0,0,.6);
   }
   .cmp-grip{
     position:absolute; top:50%; left:0; transform:translate(-50%,-50%);
-    width:34px; height:34px; border-radius:50%; background:var(--safe); color:#000;
+    width:34px; height:34px; border-radius:50%; background:var(--on-media); color:#000;
     display:flex; align-items:center; justify-content:center; font-size:.95rem; font-weight:700;
-    box-shadow:0 0 0 2px #000, 0 2px 10px rgba(0,0,0,.5);
+    box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 2px 10px rgba(0,0,0,.5);
   }
   .cmp-tag{
     position:absolute; bottom:12px; font-size:.5rem; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--ink); background:rgba(0,0,0,.6); padding:.25rem .55rem; border-radius:2px;
+    color:var(--on-media); background:rgba(0,0,0,.6); padding:.25rem .55rem; border-radius:2px;
     pointer-events:none; backdrop-filter:blur(2px);
   }
   .cmp-tag.l{ left:12px; } .cmp-tag.r{ right:12px; }
@@ -397,14 +402,16 @@
     color:var(--ink); transition:color .15s;
   }
   .model-slot .model-cta:hover{ color:var(--safe); }
+  /* the loader sits over the model stage, so it stays light-on-dark */
   .v-loading{
     position:absolute; inset:0; display:none; align-items:center; justify-content:center;
     flex-direction:column; gap:.6rem; background:rgba(0,0,0,.7); z-index:5;
-    font-size:.55rem; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-dim);
+    font-size:.55rem; letter-spacing:.24em; text-transform:uppercase;
+    color:rgba(255,255,255,.7);
   }
   .v-loading.on{ display:flex; }
-  .bar{ width:120px; height:2px; background:var(--line); overflow:hidden; }
-  .bar > span{ display:block; height:100%; width:0%; background:var(--safe); transition:width .15s; }
+  .bar{ width:120px; height:2px; background:rgba(255,255,255,.25); overflow:hidden; }
+  .bar > span{ display:block; height:100%; width:0%; background:var(--on-media); transition:width .15s; }
 
   /* ---- footer ---------------------------------------------------------- */
   .site-foot{
@@ -430,7 +437,7 @@
   }
   .modal-overlay{
     position:fixed; inset:0; z-index:80;
-    background:rgba(0,0,0,.82); backdrop-filter:blur(8px);
+    background:rgba(222,220,214,.92); backdrop-filter:blur(8px);
     display:flex; align-items:flex-start; justify-content:center;
     padding:1.5rem; overflow-y:auto;
     animation:overlayIn .2s ease forwards;
@@ -440,7 +447,7 @@
     position:relative; display:flex; flex-direction:column;
     background:var(--panel); border:1px solid var(--line); border-radius:16px;
     max-width:320px; width:100%;
-    box-shadow:0 24px 64px rgba(0,0,0,.8);
+    box-shadow:0 18px 48px rgba(0,0,0,.16);
     animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
     padding:10px 10px 18px; gap:.85rem;
     margin:6vh auto auto;
@@ -448,17 +455,17 @@
   .about-card.closing{ animation:cardOut .2s cubic-bezier(.4,0,1,1) forwards; }
   .about-card-close, .sk-card-close{
     position:absolute; top:.55rem; right:.55rem; z-index:2;
-    background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
-    border:1px solid rgba(255,255,255,.12); border-radius:50%;
+    background:rgba(255,255,255,.75); backdrop-filter:blur(4px);
+    border:1px solid var(--line); border-radius:50%;
     color:var(--ink-dim); font-size:.8rem;
     cursor:pointer; width:26px; height:26px;
     display:flex; align-items:center; justify-content:center;
     transition:color .12s, background .12s; line-height:1;
   }
-  .about-card-close:hover, .sk-card-close:hover{ color:var(--ink); background:rgba(0,0,0,.85); }
+  .about-card-close:hover, .sk-card-close:hover{ color:var(--ink); background:#fff; }
   .about-photo{
     width:100%; aspect-ratio:4/5; flex-shrink:0;
-    border-radius:10px; overflow:hidden; position:relative; background:#111;
+    border-radius:10px; overflow:hidden; position:relative; background:var(--frame);
     border:1px solid var(--safe);
   }
   .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -494,7 +501,7 @@
   /* ---- sketchbook modal ------------------------------------------------ */
   .sk-overlay{
     position:fixed; inset:0; z-index:80;
-    background:rgba(0,0,0,.82); backdrop-filter:blur(8px);
+    background:rgba(222,220,214,.92); backdrop-filter:blur(8px);
     display:flex; align-items:flex-start; justify-content:center;
     padding:.5rem; overflow-y:auto;
     animation:overlayIn .2s ease forwards;
@@ -504,7 +511,7 @@
     position:relative; width:min(92vw,1400px);
     background:var(--panel); border:1px solid var(--line); border-radius:12px;
     margin:calc(var(--nav-h) + 2.4rem) auto auto;
-    box-shadow:0 24px 64px rgba(0,0,0,.8);
+    box-shadow:0 18px 48px rgba(0,0,0,.16);
     animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
     overflow:hidden; max-height:88dvh; display:flex; flex-direction:column;
   }
@@ -533,7 +540,7 @@
   .sk-item img, .sk-item video{ display:block; width:100%; height:auto; }
   .sk-lightbox{
     position:fixed; inset:0; z-index:97;
-    background:rgba(0,0,0,.94); backdrop-filter:blur(8px);
+    background:rgba(222,220,214,.96); backdrop-filter:blur(8px);
     display:flex; align-items:center; justify-content:center;
     padding:1.5rem; cursor:zoom-out;
     animation:overlayIn .18s ease forwards;
@@ -567,10 +574,9 @@
 
   /* ---- responsive ------------------------------------------------------ */
 
-  /* Phones/small tablets: drop the column gutters so each preview runs edge to
-     edge, and give every project a full screen of its own. The 16:9 ratio is
-     kept deliberately — cropping to a portrait frame would cut the sides off
-     the actual compositions. */
+  /* Phones/small tablets: every project fills the screen. The frame drops its
+     16:9 ratio and takes all the height left over after the title bar, with the
+     media cover-cropped to fill it. */
   @media (max-width:760px){
     .feed{
       width:100%;
@@ -578,16 +584,19 @@
     }
     .proj{
       max-width:none; margin:0;
-      min-height:calc(100dvh - var(--nav-h));
-      display:flex; flex-direction:column; justify-content:center;
+      height:calc(100dvh - var(--nav-h));
+      display:flex; flex-direction:column;
       padding-bottom:0;
       scroll-margin-top:var(--nav-h);
     }
     .proj-stage{
-      border-left:none; border-right:none; border-radius:0;
+      flex:1 1 auto; min-height:0;
+      aspect-ratio:auto;                /* height comes from the flex row */
+      border:none; border-radius:0;
     }
     .proj-bar{
-      margin-top:0; padding:.95rem var(--gutter) 0;
+      flex:0 0 auto;
+      margin-top:0; padding:.9rem var(--gutter) 1.1rem;
       border-top:none;
     }
   }
@@ -1256,9 +1265,11 @@ async function ensureThree(){
   const scene  = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 2000);
 
-  const accent = getComputedStyle(document.documentElement).getPropertyValue("--safe").trim() || "#ffffff";
+  // --rim, not --safe: on a light page the accent is near-black and would
+  // switch the rim light off entirely.
+  const rimHex = getComputedStyle(document.documentElement).getPropertyValue("--rim").trim() || "#ffffff";
   const key = new THREE.DirectionalLight(0xffffff, 2.4);              key.position.set(3,5,4);
-  const rim = new THREE.DirectionalLight(new THREE.Color(accent), 3); rim.position.set(-4,2,-5);
+  const rim = new THREE.DirectionalLight(new THREE.Color(rimHex), 3); rim.position.set(-4,2,-5);
   const amb = new THREE.AmbientLight(0x404040, 1.2);
   scene.add(key, rim, amb);
 
@@ -1471,9 +1482,13 @@ document.addEventListener("keydown", e=>{
 /* =========================================================================
    THEME / CMS-DRIVEN SETTINGS
    ========================================================================= */
-function darkenHex(hex, f){
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return "#" + [r,g,b].map(v=>Math.round(v*f).toString(16).padStart(2,"0")).join("");
+/* Blend two hex colours. The accent's "dim" variant is a mix toward the page
+   background, not a darkening — on a light canvas darkening would make the dim
+   shade *stronger* than the accent and invert every active/inactive pair. */
+function mixHex(a, b, t){
+  const [r1,g1,b1] = hexToRgb(a), [r2,g2,b2] = hexToRgb(b);
+  const m = (x,y)=>Math.round(x + (y - x) * t).toString(16).padStart(2,"0");
+  return "#" + m(r1,r2) + m(g1,g2) + m(b1,b2);
 }
 function hexToRgb(hex){
   hex = hex.trim().replace(/^#/,"");
@@ -1482,7 +1497,8 @@ function hexToRgb(hex){
 }
 function applyAccent(hex){
   if(!hex) return;
-  const dim = darkenHex(hex,.45);
+  const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#dedcd6";
+  const dim = mixHex(hex, bg, .62);
   document.documentElement.style.setProperty("--safe", hex);
   document.documentElement.style.setProperty("--safe-dim", dim);
   updateBloomColors();
