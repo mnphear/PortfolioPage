@@ -6,19 +6,30 @@ Guidance for working in this repo. Read this before editing.
 
 Martin Fir's personal portfolio — a **single-column vertical scroll** of
 projects. Each project is one full-width 16:9 **preview frame** (its hero clip)
-above a caption bar; clicking either **expands the project in place** to reveal
-its description and remaining media, stacked full width in the same column.
-There is no side rail, no viewer pane and no project modal.
+above a caption bar holding just the **title and year** — no index number, no
+discipline labels. Clicking a frame opens a **full-screen modal** whose media is
+a **horizontal scroll-snap carousel**: arrows, dots, ←/→ and swipe step through
+that project's media. There is no side rail and no viewer pane.
 
-**Exactly one video plays at a time.** Every `<video>` in the feed is watched by
-a single IntersectionObserver; the most visible clip plays and all others pause.
-Sound follows the active clip via a per-frame toggle. Media can be an image, a
-video, a before/after **compare** wiper, or a **3D model** (GLB).
+On **phones (≤760px) the feed goes full-bleed**: no column gutters, and each
+project gets a screen of its own (`min-height:100dvh - nav`, vertically
+centred). The 16:9 ratio is kept on purpose — cropping to a portrait frame would
+cut the sides off the compositions.
 
-Aesthetic: editorial / monochrome. Flat black, near-white ink, white accent —
-colour comes only from the work. Fraunces serif for display, Helvetica for
-labels. No grain/scanline/vignette FX (the layers still exist and are wired to
-the CMS sliders, but all default to 0).
+**Exactly one video plays at a time.** Every `<video>` is watched by a single
+IntersectionObserver; the most visible clip plays and all others pause. While
+the modal is open it *owns* playback (`vidScope`), so the feed behind it stays
+paused. Feed clips carry a small **icon-only** mute toggle and a bare blinking
+dot marking the live one; **modal clips use the browser's native player**
+(`controls`). Media can be an image, a video, a before/after **compare** wiper,
+or a **3D model**.
+
+Aesthetic: monochrome and quiet. Flat black, near-white ink, light greys for
+secondary text, white accent — colour comes only from the work. **One sans
+across the whole site** (Helvetica Neue/Arial): `--font-d` and `--font-m` are
+the same stack, no serif, no webfont request by default. No grain/scanline/
+vignette FX (the layers still exist and are wired to the CMS sliders, but all
+default to 0).
 
 ## Stack & constraints
 
@@ -99,21 +110,33 @@ One `<script type="module">`. Key pieces:
 
 - `loadProjects()` — boot: fetch JSON → fallback to `DEFAULT_PROJECTS` → build UI.
 - `buildFeed()` — renders one `<article class="proj">` per project: preview
-  frame + caption bar + an empty `.proj-body`.
+  frame + a caption bar of title/year only.
 - `heroOf(p)` — the clip that represents a project: first `video` with a `src`,
   else the first media item.
-- `toggleProject(i)` / `buildProjectBody()` — expand-in-place. The body is built
-  **lazily on first open** and torn down on close, so a closed project never
-  loads its extra media. Extras are grouped by `cat`, labelled only when the
-  project spans more than one category.
-- `rowHtml(m)` — renders one full-width row in the expanded body; routes by
-  `m.type` to an `<img>`, a video frame, `compareHtml`, or a 3D slot.
+- `openProjectModal(i)` / `closeProjectModal()` — the carousel is built **on
+  open** and torn down on close, so a project never loads its media until asked.
+  Open sets `vidScope = pmTrack` and locks page scroll; close reverses both,
+  unobserves the modal's videos and returns the 3D stage.
+- `slideHtml(m)` — one `.pm-slide`; routes by `m.type` to an `<img>`, a video,
+  `compareHtml`, or a 3D slot, each inside a contain-fitted `.pm-frame`.
+- `pmGoTo(n)` / `pmSync()` / `pmPaint(n)` — every slide is exactly one
+  track-width wide, so index ↔ `scrollLeft` is just multiplication. `pmGoTo`
+  scrolls and paints optimistically; `pmSync` (debounced on `scroll`) is the
+  source of truth and covers swipes. **Don't call `pmSync()` straight after
+  `pmGoTo()`** — the smooth scroll hasn't landed yet and it will snap the
+  counter back to the old slide.
+- Modal videos are marked `data-native` and carry `controls`. `syncSound()`
+  **returns early for them** — the browser owns their mute state, and forcing it
+  would undo the viewer's own click on the player. Only feed clips are driven by
+  the custom toggle.
 - `mediaThumb(m)` — shared thumb source (image `src` / video `poster` /
   compare `after`). Use this whenever you need a representative thumbnail.
 - **One-video-at-a-time**: `vidObserver` tracks the intersection ratio of every
   `video[data-feed]` in `vidRatio`; `updateActiveVideo()` plays the highest-ratio
-  clip (≥0.3) and pauses the rest. `pauseFeed(true)` stops everything while a
-  modal is open. New videos must be passed to `registerVideos(root)`.
+  clip (≥0.3) and pauses the rest. `pauseAll(true)` stops everything (About /
+  Sketchbook); `setVideoScope(el)` restricts playback to one subtree (the project
+  modal) — without it the feed, still intersecting the viewport behind the
+  overlay, would steal the slot. New videos need `registerVideos(root)`.
   - `play()` ignores **AbortError** — that just means a `pause()` superseded a
     still-buffering `play()`. Retrying there resurrects stopped videos.
   - Videos are `preload="none"`; `play()` promotes the active one to `auto`.
@@ -130,8 +153,8 @@ One `<script type="module">`. Key pieces:
   mapping. Camera framing uses `ZOOM_MULT` (2.2). Exposes `window.__viewer`.
 - Scroll reveal: `revealObserver` adds `.seen`. If IntersectionObserver is
   missing the feed gets `.no-reveal` — never leave the work at `opacity:0`.
-- Keyboard: ↑/↓ move between projects, Enter/Space expands the focused one,
-  Esc closes modals.
+- Keyboard: ↑/↓ move between projects, Enter/Space opens the focused one. Inside
+  the modal ←/→ step slides and Esc closes.
 
 ### Theming (do not hardcode the accent)
 
@@ -140,16 +163,21 @@ variable** used everywhere:
 
 ```css
 --safe: #ffffff;   /* monochrome — colour comes from the work */
---safe-dim: #3a3a3e;
+--safe-dim: #4a4a4e;
+--ink-dim:   #b9b7b0;   /* light grey, secondary text  */
+--ink-faint: #8a8880;   /* light grey, tertiary text   */
 ```
 
 The Three.js rim light reads `--safe` at runtime, so changing those two lines
 recolors the whole UI **and** the 3D key light. Never hardcode the accent hex in
 new code — reference `var(--safe)` (CSS) or read the property (JS).
 
-Fonts: Fraunces (display/headings), Helvetica Neue/Arial (everything else) —
-the `editorial` entry in `FONTS`. Do not revive the teal safelight, the occult
-sigils or the grain/glow filter stack; that direction was explicitly rejected.
+Fonts: **one sans everywhere.** `--font-d` and `--font-m` are both the
+Helvetica Neue/Arial stack; the `editorial` entry in `FONTS` has `url:null`, so
+`<link id="gfonts">` ships with no `href` and no webfont is fetched unless a
+different CMS preset asks for one. Do not reintroduce a serif display face, the
+teal safelight, the occult sigils or the grain/glow filter stack — all
+explicitly rejected.
 
 ## How the CMS works (`cms.html`)
 
@@ -192,15 +220,17 @@ ffmpeg -ss 4 -i in.mp4 -frames:v 1 -c:v libwebp -quality 80 video/name-poster.we
 
 - Provide **complete files / full code**, not partial snippets, unless asked for
   a snippet specifically.
-- Preserve the existing patterns: media-type routing in `rowHtml`/`heroHtml`,
+- Preserve the existing patterns: media-type routing in `slideHtml`/`heroHtml`,
   the `mediaThumb` helper, CSS-variable theming, the
   JSON-first-with-inline-fallback loading model.
 - All interpolated content goes through `esc()`. The feed is built with
   `innerHTML` from user-authored JSON — don't bypass it.
 - Lowercase, hyphenated asset filenames (the CMS does this). Watch case.
-- When adding a new media type: add a `rowHtml` branch, a `heroHtml` branch if it
-  can lead a project, a `mediaThumb` case, and a CMS editor field + preview
+- When adding a new media type: add a `slideHtml` branch, a `heroHtml` branch if
+  it can lead a project, a `mediaThumb` case, and a CMS editor field + preview
   branch.
+- `role` and `cat` are still written by the CMS but no longer displayed — the
+  caption bar is title/year only and the modal shows media in authored order.
 - Don't add a build step or external dependencies to keep Pages deployment a
   zero-config `git push`.
 ```

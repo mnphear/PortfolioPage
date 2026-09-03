@@ -8,7 +8,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link id="gfonts" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<!-- no href: the default look is the system sans. applyFont() sets one only if
+     a CMS font preset actually needs a webfont. -->
+<link id="gfonts" rel="stylesheet">
 
 <style>
 /* ---- self-hosted fonts (no flash, no external dep) ---- */
@@ -52,14 +54,15 @@
     --panel:     #101010;
     --line:      #26262a;
     --ink:       #f4f1ea;   /* near-white */
-    --ink-dim:   #8f8d86;
-    --ink-faint: #58564f;
+    --ink-dim:   #b9b7b0;   /* light grey — secondary text */
+    --ink-faint: #8a8880;   /* light grey — tertiary text */
     --safe:      #ffffff;   /* monochrome accent — colour comes from the work */
-    --safe-dim:  #3a3a3e;
+    --safe-dim:  #4a4a4e;
     --radius:    2px;
-    --font-d:    "Fraunces", Georgia, "Times New Roman", serif;
+    /* one sans across the whole site — display and body share the stack */
+    --font-d:    "Helvetica Neue", Helvetica, Arial, sans-serif;
     --font-m:    "Helvetica Neue", Helvetica, Arial, sans-serif;
-    --tracking-d: -.01em;
+    --tracking-d: -.02em;
 
     --col:    1180px;                    /* the single column */
     --gutter: clamp(1rem, 4vw, 3.2rem);
@@ -198,15 +201,13 @@
   .proj-stage > video.ready, .pm-frame > video.ready{ opacity:1; }
   /* live dot — marks the clip that currently owns playback */
   .stage-live{
-    position:absolute; top:.75rem; left:.85rem; z-index:3;
-    display:none; align-items:center; gap:.42rem;
-    font-size:.5rem; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--ink); text-shadow:0 1px 6px rgba(0,0,0,.9);
-    pointer-events:none;
+    position:absolute; top:.9rem; left:.95rem; z-index:3;
+    display:none; pointer-events:none;
   }
-  .proj.is-live .stage-live{ display:flex; }
+  .proj.is-live .stage-live{ display:block; }
   .stage-live i{
-    width:6px; height:6px; border-radius:50%; background:var(--safe);
+    display:block; width:7px; height:7px; border-radius:50%;
+    background:var(--safe); box-shadow:0 1px 6px rgba(0,0,0,.9);
     animation:blink 1.4s steps(1) infinite;
   }
   @keyframes blink{ 50%{ opacity:.15 } }
@@ -220,8 +221,7 @@
     cursor:pointer; color:var(--ink);
     transition:color .15s, border-color .15s, background .15s;
   }
-  .proj.is-live .stage-snd,
-  .pm-frame.is-live .stage-snd{ display:flex; }
+  .proj.is-live .stage-snd{ display:flex; }
   .stage-snd:hover{ border-color:var(--safe); background:rgba(0,0,0,.75); }
   .stage-snd svg{ width:16px; height:16px; display:block; }
   .stage-snd .snd-cone{ fill:currentColor; }
@@ -232,14 +232,6 @@
   .stage-snd .snd-wave{ display:none; }          /* muted is the default state */
   .stage-snd.on .snd-wave{ display:block; }
   .stage-snd.on .snd-x{ display:none; }
-  /* open affordance */
-  .stage-hint{
-    position:absolute; right:.7rem; top:.75rem; z-index:3;
-    font-size:.5rem; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--ink); text-shadow:0 1px 6px rgba(0,0,0,.9);
-    opacity:0; transition:opacity .2s ease; pointer-events:none;
-  }
-  .proj-stage:hover .stage-hint{ opacity:.9; }
 
   /* ---- project caption bar --------------------------------------------- */
   .proj-bar{
@@ -249,7 +241,7 @@
     border-top:1px solid var(--line);
   }
   .proj-title{
-    font-family:var(--font-d), serif; font-weight:500;
+    font-family:var(--font-d), sans-serif; font-weight:600;
     font-size:clamp(1.6rem, 5.2vw, 3.4rem); line-height:.98;
     letter-spacing:var(--tracking-d);
     min-width:0; overflow-wrap:break-word;
@@ -279,7 +271,7 @@
   }
   .pm-headings{ min-width:0; }
   .pm-title{
-    font-family:var(--font-d), serif; font-weight:500;
+    font-family:var(--font-d), sans-serif; font-weight:600;
     font-size:clamp(1.3rem, 3.4vw, 2.2rem); line-height:1;
     letter-spacing:var(--tracking-d);
   }
@@ -473,7 +465,7 @@
   .about-photo .plate{ border-radius:10px; }
   .about-info{ display:flex; flex-direction:column; gap:.65rem; padding:0 .3rem; }
   .about-name{
-    font-family:var(--font-d), serif; font-weight:600;
+    font-family:var(--font-d), sans-serif; font-weight:600;
     font-size:1.5rem; letter-spacing:var(--tracking-d); line-height:.98;
   }
   .about-location{
@@ -522,7 +514,7 @@
     padding:.8rem 1rem .6rem; border-bottom:1px solid var(--line);
   }
   .sk-card-title{
-    font-family:var(--font-d), serif; font-weight:600;
+    font-family:var(--font-d), sans-serif; font-weight:600;
     font-size:1.15rem; letter-spacing:var(--tracking-d); color:var(--ink);
   }
   .sk-grid{
@@ -568,21 +560,47 @@
   }
   #preloader[hidden]{ display:none; }
   #pre-name{
-    font-family:var(--font-d), serif; font-weight:500;
+    font-family:var(--font-d), sans-serif; font-weight:600;
     font-size:clamp(2rem,7vw,3.6rem); letter-spacing:.02em;
     color:var(--ink); opacity:0; transition:opacity .7s ease;
   }
 
   /* ---- responsive ------------------------------------------------------ */
+
+  /* Phones/small tablets: drop the column gutters so each preview runs edge to
+     edge, and give every project a full screen of its own. The 16:9 ratio is
+     kept deliberately — cropping to a portrait frame would cut the sides off
+     the actual compositions. */
+  @media (max-width:760px){
+    .feed{
+      width:100%;
+      padding-top:var(--nav-h);
+    }
+    .proj{
+      max-width:none; margin:0;
+      min-height:calc(100dvh - var(--nav-h));
+      display:flex; flex-direction:column; justify-content:center;
+      padding-bottom:0;
+      scroll-margin-top:var(--nav-h);
+    }
+    .proj-stage{
+      border-left:none; border-right:none; border-radius:0;
+    }
+    .proj-bar{
+      margin-top:0; padding:.95rem var(--gutter) 0;
+      border-top:none;
+    }
+  }
+
   @media (max-width:640px){
     .sk-grid{ grid-template-columns:repeat(2,1fr); }
     .nav-links{ gap:1.1rem; }
-    .proj-bar{ flex-direction:column; align-items:flex-start; gap:.5rem; }
-    .pm-slide{ padding:.7rem .8rem .3rem; }
+    .pm-slide{ padding:.7rem .5rem .3rem; }
     .pm-arrow{ display:none; }            /* swipe the track instead */
     .pm-foot{ flex-direction:column; align-items:flex-start; gap:.7rem; }
     .pm-dots{ margin-left:0; }
     .pm-desc{ max-height:4.5em; }
+    .pm-head{ padding:.8rem 1rem .7rem; }
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -736,8 +754,9 @@ let ABOUT = {
 };
 
 const FONTS = [
-  { id:"editorial",   label:"Fraunces + Helvetica", display:'"Fraunces", Georgia, "Times New Roman", serif', mono:'"Helvetica Neue", Helvetica, Arial, sans-serif',
-    url:"https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" },
+  { id:"editorial",   label:"Helvetica (one sans everywhere)",
+    display:'"Helvetica Neue", Helvetica, Arial, sans-serif',
+    mono:'"Helvetica Neue", Helvetica, Arial, sans-serif', url:null },
   { id:"default",     label:"Big Shoulders + IBM Plex Mono", display:'"Big Shoulders Display"', mono:'"IBM Plex Mono",ui-monospace,monospace',
     url:"https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" },
   { id:"bebas-space",  label:"Bebas Neue + Space Mono",       display:'"Bebas Neue"',            mono:'"Space Mono",ui-monospace,monospace',
@@ -881,17 +900,18 @@ function play(v){
   }
 }
 
-function soundHost(v){ return v.closest(".pm-frame") || v.closest(".proj"); }
-
 function markLive(v, on){
-  const host = soundHost(v);
+  const host = v.closest(".proj");
   if(host) host.classList.toggle("is-live", on);
 }
 
+/* Only feed clips are driven by the custom toggle. Modal clips carry native
+   controls, so the browser owns their mute state — forcing it here would undo
+   the viewer's own click on the player. */
 function syncSound(){
-  if(!activeVid) return;
+  if(!activeVid || activeVid.dataset.native) return;
   activeVid.muted = !wantSound;
-  const host = soundHost(activeVid);
+  const host = activeVid.closest(".proj");
   const btn  = host && host.querySelector(".stage-snd");
   if(btn){
     btn.classList.toggle("on", wantSound);
@@ -964,9 +984,10 @@ function slideHtml(m, i){
       : `<div class="pm-frame"><span class="plate p${i%4}"></span><span class="plate-tag">plate ${pad2(i+1)}</span></div>`;
   } else if(m.type==="video"){
     frame = m.src
+      // the modal gets the browser's own player — scrub bar, volume, fullscreen
       ? `<div class="pm-frame"${posterBg(m)}>
-           <video data-feed src="${esc(m.src)}"${m.poster?` poster="${esc(m.poster)}"`:""}
-                  preload="none" muted loop playsinline></video>${soundBtn()}
+           <video data-feed data-native src="${esc(m.src)}"${m.poster?` poster="${esc(m.poster)}"`:""}
+                  preload="none" muted loop playsinline controls controlslist="nodownload"></video>
          </div>`
       : `<div class="pm-frame"><span class="plate p${i%4}"></span></div>`;
   } else if(m.type==="compare"){
@@ -1028,8 +1049,7 @@ function buildFeed(){
     art.innerHTML = `
       <div class="proj-stage"${posterBg(hero)}>
         ${heroHtml(hero, i)}
-        <span class="stage-live"><i></i>Now playing</span>
-        <span class="stage-hint">Open ↗</span>
+        <span class="stage-live" aria-hidden="true"><i></i></span>
       </div>
       <div class="proj-bar">
         <h2 class="proj-title">${esc(p.title || "Untitled")}</h2>
@@ -1089,7 +1109,6 @@ function openProjectModal(i){
     ? p.media.map((_,n)=>`<button class="pm-dot" type="button" data-i="${n}" aria-label="Go to ${n+1}"></button>`).join("")
     : "";
 
-  pmTrack.querySelectorAll(".stage-snd").forEach(b=>b.addEventListener("click", toggleSound));
   pmTrack.querySelectorAll(".cmp").forEach(initCompare);
   pmTrack.querySelectorAll(".model-slot .model-cta").forEach(btn=>{
     btn.addEventListener("click", e=>{
@@ -1136,26 +1155,32 @@ function closeProjectModal(){
   setTimeout(once, 320);   // animationend can be skipped under reduced-motion
 }
 
+/* paint the chrome for a given index */
+function pmPaint(n){
+  const total = pmSlides().length;
+  pmCount.textContent = total > 1 ? `${pad2(n+1)} / ${pad2(total)}` : "";
+  pmDots.querySelectorAll(".pm-dot").forEach((d,k)=>d.classList.toggle("on", k===n));
+  pmPrev.disabled = n === 0;
+  pmNext.disabled = n === total - 1;
+}
+
 function pmGoTo(n){
   const slides = pmSlides();
   if(!slides.length) return;
   pmIndex = Math.max(0, Math.min(n, slides.length-1));
-  // every slide is exactly one track-width wide, so index maps to scrollLeft
+  // every slide is exactly one track-width wide, so index maps to scrollLeft.
+  // Paint straight away — the smooth scroll lands later and pmSync() confirms.
   pmTrack.scrollTo({ left: pmIndex * pmTrack.clientWidth, behavior:"smooth" });
-  pmSync();
+  pmPaint(pmIndex);
 }
 
-/* derive the current slide from scroll position (covers swipes too) */
+/* derive the current slide from actual scroll position (covers swipes too) */
 function pmSync(){
   const slides = pmSlides();
   if(!slides.length || !pmTrack.clientWidth) return;
-  const cur = Math.max(0, Math.min(slides.length-1,
+  pmIndex = Math.max(0, Math.min(slides.length-1,
     Math.round(pmTrack.scrollLeft / pmTrack.clientWidth)));
-  pmIndex = cur;
-  pmCount.textContent = slides.length > 1 ? `${pad2(cur+1)} / ${pad2(slides.length)}` : "";
-  pmDots.querySelectorAll(".pm-dot").forEach((d,n)=>d.classList.toggle("on", n===cur));
-  pmPrev.disabled = cur === 0;
-  pmNext.disabled = cur === slides.length - 1;
+  pmPaint(pmIndex);
 }
 
 pmTrack.addEventListener("scroll", ()=>{
@@ -1566,7 +1591,7 @@ async function loadProjects(){
   updateNavHeight();
 }
 
-/* ---- preloader: a short serif name reveal, never a blocker ---- */
+/* ---- preloader: a short name reveal, never a blocker ---- */
 function initPreloader(){
   const ov = $("#preloader"); if(!ov) return;
   ov.removeAttribute("hidden");
