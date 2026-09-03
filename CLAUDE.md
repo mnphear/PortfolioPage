@@ -24,8 +24,8 @@ dot marking the live one; **modal clips use the browser's native player**
 (`controls`). Media can be an image, a video, a before/after **compare** wiper,
 or a **3D model**.
 
-Aesthetic: monochrome and quiet, on a **light warm-grey canvas** with near-black
-ink — colour comes only from the work. **One sans across the whole site**
+Aesthetic: monochrome and quiet — **flat black canvas**, near-white ink, colour
+comes only from the work. **One sans across the whole site**
 (Helvetica Neue/Arial): `--font-d` and `--font-m` are the same stack, no serif,
 no webfont request by default. No grain/scanline/vignette FX (the layers still
 exist and are wired to the CMS sliders, but all default to 0).
@@ -161,17 +161,21 @@ Colors/fonts live in CSS custom properties in `:root`. The accent is a **single
 variable** used everywhere:
 
 ```css
---bg:        #dedcd6;   /* light warm-grey canvas      */
---panel:     #ebeae6;   /* cards/modals above the canvas */
---frame:     #cecdc7;   /* media frame before art loads */
---line:      #c2c0b9;
---ink:       #16150f;   /* near-black, warm            */
---ink-dim:   #55534c;   /* secondary text              */
---ink-faint: #86847c;   /* tertiary text               */
---safe:      #16150f;   /* accent — colour comes from the work */
+--bg:        #0a0a0a;   /* flat black canvas           */
+--panel:     #101010;   /* cards/modals above the canvas */
+--frame:     #000000;   /* media frame before art loads */
+--line:      #26262a;
+--ink:       #f4f1ea;   /* near-white, warm            */
+--ink-dim:   #b9b7b0;   /* secondary text              */
+--ink-faint: #8a8880;   /* tertiary text               */
+--safe:      #ffffff;   /* accent — colour comes from the work */
 --on-media:  #ffffff;   /* overlays that sit ON footage */
 --rim:       #ffffff;   /* 3D key light                */
 ```
+
+The palette has been flipped light and back once. If it goes light again, the
+three notes below are what broke last time — they are theme-independent by
+design now, so leave them that way.
 
 Never hardcode the accent hex in new code — reference `var(--safe)` (CSS) or
 read the property (JS). Two traps, both fixed once already:
@@ -179,14 +183,15 @@ read the property (JS). Two traps, both fixed once already:
 - **Anything drawn over media** (the live dot, compare line/grip/tags, the model
   loader) must use `--on-media`, not `--safe`. It has to read over arbitrary
   footage regardless of the page theme.
-- **The Three.js rim light reads `--rim`, not `--safe`** — on a light page the
-  accent is near-black and would switch the key light off entirely.
+- **The Three.js rim light reads `--rim`, not `--safe`** — if the accent ever
+  goes near-black (light theme) reading `--safe` switches the key light off.
+- `applyAccent()` derives `--safe-dim` by **mixing toward `--bg`**, not by
+  darkening. Darkening only works on a dark canvas; on a light one it makes the
+  "dim" shade stronger than the accent and inverts every active/inactive pair
+  (the carousel dots caught this).
 
-`applyAccent()` derives `--safe-dim` by **mixing toward `--bg`**, not by
-darkening. On a light canvas darkening makes the "dim" shade stronger than the
-accent, inverting every active/inactive pair (the carousel dots caught this).
 `about.accent` in `projects.json` is authoritative and overrides `:root` at
-runtime — it must stay dark while the canvas is light.
+runtime, so it must contrast with `--bg` — `#ffffff` on the black canvas.
 
 Fonts: **one sans everywhere.** `--font-d` and `--font-m` are both the
 Helvetica Neue/Arial stack; the `editorial` entry in `FONTS` has `url:null`, so
