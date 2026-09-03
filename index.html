@@ -171,7 +171,7 @@
     outline:none;
     /* keep the 16:9 preview AND its caption bar inside one screen — on short
        viewports the whole unit narrows rather than pushing the title under */
-    max-width:max(55vw, calc((100dvh - var(--nav-h) - 10rem) * 16 / 9));
+    max-width:max(55vw, calc((100svh - var(--nav-h) - 10rem) * 16 / 9));
     margin-inline:auto;
   }
   .proj:focus-visible .proj-stage{ border-color:var(--safe); }
@@ -514,7 +514,7 @@
     margin:calc(var(--nav-h) + 2.4rem) auto auto;
     box-shadow:0 24px 64px rgba(0,0,0,.8);
     animation:cardIn .38s cubic-bezier(.22,.6,.36,1) forwards;
-    overflow:hidden; max-height:88dvh; display:flex; flex-direction:column;
+    overflow:hidden; max-height:88svh; display:flex; flex-direction:column;
   }
   .sk-card.closing{ animation:cardOut .2s cubic-bezier(.4,0,1,1) forwards; }
   .sk-card-head{
@@ -547,7 +547,7 @@
     animation:overlayIn .18s ease forwards;
   }
   .sk-lightbox img, .sk-lightbox video{
-    max-width:100%; max-height:92dvh; object-fit:contain; border-radius:3px; cursor:default;
+    max-width:100%; max-height:92svh; object-fit:contain; border-radius:3px; cursor:default;
   }
   .sk-lightbox-cap{
     position:absolute; bottom:1.2rem; left:50%; transform:translateX(-50%);
@@ -585,7 +585,11 @@
     }
     .proj{
       max-width:none; margin:0;
-      height:calc(100dvh - var(--nav-h));
+      /* svh, NOT dvh: dvh re-measures as the mobile URL bar slides in and out,
+         so every card resizes mid-scroll and the page visibly jumps. svh is the
+         stable small-viewport height — it never changes while scrolling. */
+      height:calc(100vh - var(--nav-h));       /* fallback */
+      height:calc(100svh - var(--nav-h));
       display:flex; flex-direction:column;
       padding-bottom:0;
       scroll-margin-top:var(--nav-h);

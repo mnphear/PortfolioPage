@@ -12,9 +12,14 @@ a **horizontal scroll-snap carousel**: arrows, dots, ←/→ and swipe step thro
 that project's media. There is no side rail and no viewer pane.
 
 On **phones (≤760px) the feed goes full-bleed and full-height**: no column
-gutters, `.proj` is exactly `100dvh - nav` tall, and `.proj-stage` drops its
+gutters, `.proj` is exactly `100svh - nav` tall, and `.proj-stage` drops its
 16:9 ratio (`flex:1; aspect-ratio:auto`) to take all the height left over above
 the title bar. The media is `object-fit:cover`, so it crops to fill the screen.
+
+**Use `svh`, never `dvh`, for anything that sizes with the viewport.** `dvh`
+re-measures as the mobile URL bar slides in and out, so every card resizes
+mid-scroll and the page visibly jumps. `svh` is the stable small-viewport
+height. Keep a `100vh` line directly above each `svh` one as the fallback.
 
 **Exactly one video plays at a time.** Every `<video>` is watched by a single
 IntersectionObserver; the most visible clip plays and all others pause. While
